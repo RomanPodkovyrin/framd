@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 @Service
 public class FSIndexer implements Indexer {
@@ -28,6 +29,8 @@ public class FSIndexer implements Indexer {
                     .filter(Files::isRegularFile)
                     .filter(Files::isReadable)
                     .filter(ImageTools::isImage)
+                    .map(ImageTools::getMetadata)
+                    .filter(Optional::isPresent) // do we really want to ignore it?
                     .forEach(System.out::println);
         } catch (IOException e) {
             logger.error(e.getMessage());
