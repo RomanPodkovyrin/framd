@@ -3,6 +3,8 @@ package dev.romanempire.framd.indexing.util;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -10,6 +12,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public class ImageTools {
+
+    private static final Logger logger = LoggerFactory.getLogger(ImageTools.class);
+
     private static final Set<String>  IMAGE_EXTENSIONS = Set.of(
             "jpg", "jpeg", "png", "webp", "heic", "bmp", "avif"
     );
@@ -30,7 +35,7 @@ public class ImageTools {
         try {
             metadata = ImageMetadataReader.readMetadata(path.toFile());
         } catch (ImageProcessingException | IOException e) {
-            System.out.println(e);
+            logger.error(e.getMessage());
             return Optional.empty();
         }
         return Optional.of(metadata); // Todo return my own Metadata object instead
