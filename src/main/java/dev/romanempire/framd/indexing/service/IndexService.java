@@ -1,5 +1,6 @@
-package dev.romanempire.framd.indexing;
+package dev.romanempire.framd.indexing.service;
 
+import dev.romanempire.framd.indexing.impl.Indexer;
 import org.springframework.stereotype.Service;
 
 @Service

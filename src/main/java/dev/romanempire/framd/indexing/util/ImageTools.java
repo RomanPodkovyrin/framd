@@ -15,14 +15,14 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
-record FileNameParts(String name, String extension) {}
-
 public class ImageTools {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageTools.class);
 
+    private record FileNameParts(String name, String extension) {}
+
     private static final Set<String>  IMAGE_EXTENSIONS = Set.of(
-            "jpg", "jpeg", "png", "webp", "heic", "bmp", "avif"
+            "jpg", "jpeg", "png", "webp", "heic"
     );
 
     public static Boolean isImage(Path path) {

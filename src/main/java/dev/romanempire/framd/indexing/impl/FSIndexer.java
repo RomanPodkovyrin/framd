@@ -1,4 +1,4 @@
-package dev.romanempire.framd.indexing;
+package dev.romanempire.framd.indexing.impl;
 
 
 import dev.romanempire.framd.indexing.util.ImageTools;

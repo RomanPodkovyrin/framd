@@ -1,6 +1,6 @@
-package dev.romanempire.framd;
+package dev.romanempire.framd.controller;
 
-import dev.romanempire.framd.indexing.IndexService;
+import dev.romanempire.framd.indexing.service.IndexService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
