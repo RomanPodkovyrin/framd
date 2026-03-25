@@ -16,11 +16,14 @@ public class IndexService {
 
     private final HasherService hasherService;
 
+    private final ThumbnailService thumbnailService;
+
     public void indexPath(String path) {
         indexer.index(path);
         List<ImageMetadata> imageMetadataList = indexer.index(path);
         imageMetadataList.forEach(System.out::println);
         var hashes = hasherService.hashFiles(imageMetadataList.stream().map(ImageMetadata::path).toList());
         hashes.forEach(System.out::println);
+        thumbnailService.generateThumbnails(imageMetadataList.stream().map(ImageMetadata::path).toList());
     }
 }
