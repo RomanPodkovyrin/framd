@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,10 +19,12 @@ public class HasherService {
 
     private final Sha256Hasher hasher;
 
-    public List<String> hashFiles(List<Path> paths) {
+    public Map<String,String> hashFiles(List<Path> paths) {
         logger.info("Start Hashing Files");
-        var fileHashes = paths.stream().map(hasher::hashFile).flatMap(Optional::stream).toList();
-        return fileHashes;
+        return paths.stream()
+                .flatMap(p -> hasher.hashFile(p).stream()
+                        .map(hash -> Map.entry(p.toString(), hash)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
 }

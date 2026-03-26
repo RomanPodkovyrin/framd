@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Set;
 
@@ -70,18 +71,18 @@ public class ImageTools {
         ));
     }
 
-    private static Optional<Date> getFileDate(Metadata metadata) {
+    private static Optional<LocalDateTime> getFileDate(Metadata metadata) {
         // SubIFD contains Date Taken
         ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
         if (exifSubIFDDirectory != null){
             var date = exifSubIFDDirectory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-            if (date !=null) return Optional.of(date);
+            if (date !=null) return Optional.of(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
 
         ExifIFD0Directory exifIFD0Descriptor = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
         if (exifIFD0Descriptor != null) {
             var date = exifIFD0Descriptor.getDate(ExifIFD0Directory.TAG_DATETIME);
-            if (date !=null) return Optional.of(date);
+            if (date !=null) return Optional.of(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
 
         return Optional.empty();

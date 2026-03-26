@@ -95,6 +95,24 @@
             color: var(--text);
         }
 
+        .scan-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.4rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .scan-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
         .gallery-preview {
             flex: 1;
             padding: 2rem 3rem 3rem;
@@ -144,6 +162,9 @@
                 <button class="mode-btn active">Gallery</button>
                 <button class="mode-btn">Frame</button>
             </div>
+            <form action="/scan" method="post">
+                <button type="submit" class="scan-btn">Scan</button>
+            </form>
             <a href="/admin" class="nav-link">Admin</a>
         </nav>
     </header>
