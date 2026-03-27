@@ -46,7 +46,7 @@ public class IndexService {
         logger.info("Time to hash: {} ms", Duration.between(hashStart, hashEnd).toMillis());
 
         var generateStart = LocalTime.now();
-        thumbnailService.generateThumbnails(imageMetadataList.stream().map(ImageMetadata::path).toList());
+        var hashToPath = thumbnailService.generateThumbnails(hashes);
         var generateEnd = LocalTime.now();
         logger.info("Time to generate thumbnails: {} ms", Duration.between(generateStart, generateEnd).toMillis());
 
@@ -54,19 +54,22 @@ public class IndexService {
         // save into db
         var persistStart = LocalTime.now();
         var indexedMedia = imageMetadataList
-                .stream().map(m -> IndexedMedia.builder()
-                        .hash(hashes.get(m.path().toString()))
-                        .path(m.parentPath())
-                        .name(m.fileName())
-                        .extension(m.extension())
-                        .captureTime(m.dateTaken().orElse(LocalDateTime.now())) // todo: not good, need to change, remove optinal
-                        .lastIndexedTime(LocalDateTime.now())
-                        .lastModifiedTime(LocalDateTime.now())
-                        .width(1000)
-                        .height(1000)
-                        .sizeInBytes(1200L)
-                        .thumbnailPath(null)
-                        .build()).toList();
+                .stream().map(m -> {
+                    var hash = hashes.get(m.path().toString());
+                    return IndexedMedia.builder()
+                            .hash(hash)
+                            .path(m.parentPath())
+                            .name(m.fileName())
+                            .extension(m.extension())
+                            .captureTime(m.dateTaken().orElse(LocalDateTime.now())) // todo: not good, need to change, remove optinal
+                            .lastIndexedTime(LocalDateTime.now())
+                            .lastModifiedTime(LocalDateTime.now())
+                            .width(1000)
+                            .height(1000)
+                            .sizeInBytes(1200L)
+                            .thumbnailPath(hashToPath.getOrDefault(hash, null))
+                            .build();
+                }).toList();
         indexedMediaRepo.saveAll(indexedMedia);
         var persistEnd = LocalTime.now();
         logger.info("Time to Persist: {} ms", Duration.between(persistStart, persistEnd).toMillis());
@@ -78,5 +81,13 @@ public class IndexService {
 
     public List<IndexedMedia> getIndexInfo() {
         return indexedMediaRepo.findAll();
+    }
+
+    public Long getCount() {
+        return indexedMediaRepo.count();
+    }
+
+    public IndexedMedia getIndexInfo(String hash) {
+        return indexedMediaRepo.getAllByHash(hash).getFirst();
     }
 }

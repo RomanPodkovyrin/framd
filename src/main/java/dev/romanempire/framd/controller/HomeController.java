@@ -5,9 +5,17 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+
+import java.nio.file.Path;
 
 @Controller
 @RequiredArgsConstructor
@@ -31,8 +39,33 @@ public class HomeController {
     }
 
     @PostMapping("/scan")
-    public void scan(){
+    public ResponseEntity<Void> scan(){
         indexService.indexPath(scanPath);
+        return ResponseEntity.noContent().build();
 
+    }
+
+    @GetMapping("/photo-count")
+    public ResponseEntity<String> getImageCount() {
+        return ResponseEntity.ok(switch (indexService.getCount()) {
+            case Long c when c != 1 -> c + " photos";
+            case Long c -> c + " photo";
+        });
+    }
+
+    @GetMapping("/thumbnail/{hash}")
+    public ResponseEntity<Resource> getThumbnail(@PathVariable String hash) {
+        var meta = indexService.getIndexInfo(hash); // TODO: handle 404
+        var path = Path.of(meta.getThumbnailPath());
+        Resource resource = new FileSystemResource(path);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(resource);
+    }
+
+    @GetMapping("/gallery")
+    public String gallery(Model model) {
+        model.addAttribute("images", indexService.getIndexInfo());
+        return "gallery :: grid";
     }
 }

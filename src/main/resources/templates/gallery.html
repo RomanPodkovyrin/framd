@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="grid">
+    <div th:if="${#lists.isEmpty(images)}" class="empty-state">
+        <svg aria-hidden="true" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <p>No photos yet.</p>
+    </div>
+    <div th:unless="${#lists.isEmpty(images)}" class="photo-grid">
+        <img th:each="media : ${images}"
+             th:src="@{/thumbnail/{hash}(hash=${media.hash})}"
+             th:alt="${media.name}"
+             loading="lazy">
+    </div>
+</div>
+</body>
+</html>
