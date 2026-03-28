@@ -9,17 +9,16 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.file.Path;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
-public class HomeController {
+public class IndexController {
 
     private final IndexService indexService;
 
@@ -27,19 +26,11 @@ public class HomeController {
     private String scanPath;
 
 
-    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
-
-    @GetMapping("/")
-    public String index() {
-
-        logger.info("Called Index");
-        indexService.getIndexInfo();
-
-        return "index.html";
-    }
+    private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
     @PostMapping("/scan")
     public ResponseEntity<Void> scan(){
+    public ResponseEntity<Void> scan() {
         indexService.indexPath(scanPath);
         return ResponseEntity.noContent().build();
 
@@ -63,9 +54,5 @@ public class HomeController {
                 .body(resource);
     }
 
-    @GetMapping("/gallery")
-    public String gallery(Model model) {
-        model.addAttribute("images", indexService.getIndexInfo());
-        return "gallery :: grid";
-    }
+
 }
