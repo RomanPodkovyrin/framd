@@ -42,23 +42,6 @@ public class ThumbnailService {
             return thumbnailPathsByHash;
         }
 
-        hashes.forEach((path, hash) -> {
-            try {
-                var p = Path.of(path);
-                var saveDirection = thumbnailPath + p.getParent();
-                var saveLocation = saveDirection + "/" + p.getFileName();
-                Files.createDirectories(Path.of(saveDirection));
-                Thumbnails.of(p.toFile())
-                        .scale(0.3)
-                        .outputQuality(0.7)
-                        .toFile(saveLocation); // can overwrite file with the same filename
-
-                hashToPath.put(hash, saveLocation);
-            } catch (IOException e) {
-                logger.error(String.valueOf(e));
-            }
-        });
-        return hashToPath;
         var semaphore = new Semaphore(20);
 
 
