@@ -1,9 +1,7 @@
 package dev.romanempire.framd.hasher.impl;
 
-import dev.romanempire.framd.hasher.service.HasherService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,15 +12,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Optional;
 
-@Service
-public class Sha256Hasher{
+public class FileHasher {
 
-    private static final Logger logger = LoggerFactory.getLogger(Sha256Hasher.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileHasher.class);
 
-    public Optional<String> hashFile(Path path) {
-
-
-
+    public static Optional<String> hashFile(Path path) {
+        
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
@@ -47,10 +42,10 @@ public class Sha256Hasher{
 
 
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            logger.error("Failed to load the hashAlgorithm: {}", e.getMessage());
         }
 
 
-//        return Optional.empty();
+        return Optional.empty();
     }
 }
