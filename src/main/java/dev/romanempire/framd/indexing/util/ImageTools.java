@@ -5,7 +5,7 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
-import dev.romanempire.framd.indexing.model.ImageMetadata;
+import dev.romanempire.framd.indexing.model.ExifData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +20,10 @@ public class ImageTools {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageTools.class);
 
-    private record FileNameParts(String name, String extension) {}
+    private record FileNameParts(String name, String extension) {
+    }
 
-    private static final Set<String>  IMAGE_EXTENSIONS = Set.of(
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of(
             "jpg", "jpeg", "png", "webp", "heic"
     );
 
@@ -47,7 +48,7 @@ public class ImageTools {
     }
 
 
-    public static Optional<ImageMetadata> getMetadata(Path path) {
+    public static Optional<ExifData> getMetadata(Path path) {
 
         Metadata metadata;
         try {
@@ -62,7 +63,7 @@ public class ImageTools {
 
         FileNameParts fileNameParts = getFileParts(path);
 
-        return Optional.of(new ImageMetadata(
+        return Optional.of(new ExifData(
                 optionalDate,
                 path.getParent().toString(),
                 fileNameParts.name(),
@@ -74,15 +75,15 @@ public class ImageTools {
     private static Optional<LocalDateTime> getFileDate(Metadata metadata) {
         // SubIFD contains Date Taken
         ExifSubIFDDirectory exifSubIFDDirectory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-        if (exifSubIFDDirectory != null){
+        if (exifSubIFDDirectory != null) {
             var date = exifSubIFDDirectory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
-            if (date !=null) return Optional.of(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
+            if (date != null) return Optional.of(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
 
         ExifIFD0Directory exifIFD0Descriptor = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
         if (exifIFD0Descriptor != null) {
             var date = exifIFD0Descriptor.getDate(ExifIFD0Directory.TAG_DATETIME);
-            if (date !=null) return Optional.of(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
+            if (date != null) return Optional.of(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
 
         return Optional.empty();

@@ -15,6 +15,7 @@ public class UIController {
     private final IndexService indexService;
 
     private static final Logger logger = LoggerFactory.getLogger(UIController.class);
+
     @GetMapping("/gallery")
     public String gallery(Model model) {
         model.addAttribute("images", indexService.getIndexInfo());

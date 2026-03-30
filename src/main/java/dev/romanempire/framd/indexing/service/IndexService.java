@@ -1,8 +1,7 @@
 package dev.romanempire.framd.indexing.service;
 
-import dev.romanempire.framd.hasher.service.HasherService;
+import dev.romanempire.framd.extractor.service.MetadataExtractorService;
 import dev.romanempire.framd.indexing.impl.Indexer;
-import dev.romanempire.framd.indexing.model.ImageMetadata;
 import dev.romanempire.framd.repository.IndexedMedia;
 import dev.romanempire.framd.repository.IndexedMediaRepo;
 import dev.romanempire.framd.thumbnails.ThumbnailService;
@@ -10,11 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Path;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class IndexService {
 
     private final Indexer indexer;
 
-    private final HasherService hasherService;
+    private final MetadataExtractorService metadataExtractorService;
 
     private final ThumbnailService thumbnailService;
 
@@ -36,47 +37,45 @@ public class IndexService {
         List<ImageMetadata> imageMetadataList = indexer.index(path);
         var indexEnd = LocalTime.now();
         logger.info("Time to index: {} ms", Duration.between(indexStart, indexEnd).toMillis());
+    public void indexPath(String path) {
 
-
+        List<Path> paths = walkDirectory(path);
         // should walk it first to get metadata
 
         var hashStart = LocalTime.now();
-        var hashes = hasherService.hashFiles(imageMetadataList.stream().map(ImageMetadata::path).toList());
+        var indexedMedia = metadataExtractorService.extractMetadata(paths);
         var hashEnd = LocalTime.now();
         logger.info("Time to hash: {} ms", Duration.between(hashStart, hashEnd).toMillis());
 
         var generateStart = LocalTime.now();
-        var hashToPath = thumbnailService.generateThumbnails(hashes);
+        var hashToPath = thumbnailService.generateThumbnails(indexedMedia.stream().collect(Collectors.toMap(IndexedMedia::getFullPath, IndexedMedia::getHash)));
         var generateEnd = LocalTime.now();
         logger.info("Time to generate thumbnails: {} ms", Duration.between(generateStart, generateEnd).toMillis());
 
+        // TODO: dont' like the mutation
+        indexedMedia
+                .forEach(m -> {
+                    m.setThumbnailPath(hashToPath.getOrDefault(m.getHash(), null));
+                });
 
+
+        persist(indexedMedia);
+    }
+
+    private void persist(List<IndexedMedia> indexedMedia) {
         // save into db
         var persistStart = LocalTime.now();
-        var indexedMedia = imageMetadataList
-                .stream().map(m -> {
-                    var hash = hashes.get(m.path().toString());
-                    return IndexedMedia.builder()
-                            .hash(hash)
-                            .path(m.parentPath())
-                            .name(m.fileName())
-                            .extension(m.extension())
-                            .captureTime(m.dateTaken().orElse(LocalDateTime.now())) // todo: not good, need to change, remove optinal
-                            .lastIndexedTime(LocalDateTime.now())
-                            .lastModifiedTime(LocalDateTime.now())
-                            .width(1000)
-                            .height(1000)
-                            .sizeInBytes(1200L)
-                            .thumbnailPath(hashToPath.getOrDefault(hash, null))
-                            .build();
-                }).toList();
         indexedMediaRepo.saveAll(indexedMedia);
         var persistEnd = LocalTime.now();
         logger.info("Time to Persist: {} ms", Duration.between(persistStart, persistEnd).toMillis());
+    }
 
-        // this would be made with virtual threads and a semaphore to limit amount of threads
-
-        return indexedMedia;
+    private List<Path> walkDirectory(String path) {
+        var indexStart = LocalTime.now();
+        List<Path> imageMetadataList = indexer.walk(path);
+        var indexEnd = LocalTime.now();
+        logger.info("Time to walk: {} ms", Duration.between(indexStart, indexEnd).toMillis());
+        return imageMetadataList;
     }
 
     public List<IndexedMedia> getIndexInfo() {

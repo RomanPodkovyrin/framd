@@ -41,4 +41,8 @@ public class IndexedMedia {
     private Long sizeInBytes;
     @Column(nullable = true)
     private String thumbnailPath;
+
+    public String getFullPath() {
+        return path + "/" + name + ((!extension.isEmpty()) ? "." + extension : "");
+    }
 }
