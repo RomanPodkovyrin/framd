@@ -1,7 +1,7 @@
 package dev.romanempire.framd.indexing.impl;
 
 
-import dev.romanempire.framd.indexing.util.ImageTools;
+import dev.romanempire.framd.extractor.util.ImageTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -35,6 +35,6 @@ public class FSIndexer implements Indexer {
         }
         logger.info("done");
 
-        return List.of();
+        return List.of( );
     }
 }

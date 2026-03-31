@@ -1,5 +1,6 @@
 package dev.romanempire.framd.indexing.util;
 
+import dev.romanempire.framd.extractor.util.ImageTools;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 

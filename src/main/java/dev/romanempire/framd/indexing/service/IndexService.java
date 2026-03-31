@@ -45,7 +45,7 @@ public class IndexService {
         var hashStart = LocalTime.now();
         var indexedMedia = metadataExtractorService.extractMetadata(paths);
         var hashEnd = LocalTime.now();
-        logger.info("Time to hash: {} ms", Duration.between(hashStart, hashEnd).toMillis());
+        logger.info("Time to Extract metadata: {} ms", Duration.between(hashStart, hashEnd).toMillis());
 
         var generateStart = LocalTime.now();
         var hashToPath = thumbnailService.generateThumbnails(indexedMedia.stream().collect(Collectors.toMap(IndexedMedia::getFullPath, IndexedMedia::getHash)));
@@ -74,7 +74,7 @@ public class IndexService {
         var indexStart = LocalTime.now();
         List<Path> imageMetadataList = indexer.walk(path);
         var indexEnd = LocalTime.now();
-        logger.info("Time to walk: {} ms", Duration.between(indexStart, indexEnd).toMillis());
+        logger.info("Time to walk: {} ms {} files", Duration.between(indexStart, indexEnd).toMillis(), imageMetadataList.size());
         return imageMetadataList;
     }
 

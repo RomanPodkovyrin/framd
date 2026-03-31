@@ -29,13 +29,13 @@ public class IndexedMedia {
     private String name;
     @Column(nullable = false)
     private String extension;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime captureTime;
     private LocalDateTime lastIndexedTime;
     private LocalDateTime lastModifiedTime;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer width;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer height;
     @Column(nullable = false)
     private Long sizeInBytes;
