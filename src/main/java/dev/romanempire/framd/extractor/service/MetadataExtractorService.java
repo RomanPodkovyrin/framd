@@ -37,22 +37,9 @@ public class MetadataExtractorService {
                     executor.submit(() -> {
                         try {
                             semaphore.acquire();
-                            ExifData exifData = ImageTools.getMetadata(p).get();
-                            var hash = FileHasher.hashFile(p).get();
                             Optional<ExifData> exifDataOptional =  ExifData.from(path);
                             Optional<String> hashOptional = FileHasher.hashFile(path);
 
-                            indexedMedia.add(IndexedMedia.builder()
-                                    .hash(hash)
-                                    .path(exifData.parentPath())
-                                    .name(exifData.fileName())
-                                    .extension(exifData.extension())
-                                    .captureTime(exifData.dateTaken().orElse(LocalDateTime.now())) // todo: not good, need to change, remove optional
-                                    .lastIndexedTime(LocalDateTime.now()) //Todo
-                                    .lastModifiedTime(LocalDateTime.now()) // todo
-                                    .width(1000)// todo
-                                    .height(1000)// todo
-                                    .sizeInBytes(1200L) // todo
                             if (exifDataOptional.isPresent() && hashOptional.isPresent()){
                                 var exif = exifDataOptional.get();
                                 ImageTools.FileNameParts fileNameParts = ImageTools.getFileParts(path);

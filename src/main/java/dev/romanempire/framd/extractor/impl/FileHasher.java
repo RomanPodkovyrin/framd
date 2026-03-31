@@ -21,17 +21,10 @@ public class FileHasher {
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
-
-            long totaleBytes = path.toFile().length();
-            long bytesRead = 0;
             try (var fis = new FileInputStream(path.toFile());
                  var dis = new DigestInputStream(fis, digest)) {
                 byte[] buffer = new byte[8192]; // 8KB chunks
-                long chunk;
-                while ((chunk = dis.read(buffer)) != -1) {
-                    bytesRead += chunk;
-                    logger.info("Hashing {}, read bytes {} out of {} ({}%)", path.getFileName(),bytesRead, totaleBytes, ((bytesRead* 100) / totaleBytes) );
-                    // should track image hashign progress?
+                while (dis.read(buffer) != -1) {
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

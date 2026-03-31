@@ -15,11 +15,16 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class IndexService {
+
+
+    private final AtomicBoolean isScanning = new AtomicBoolean(false);
 
     private final Indexer indexer;
 
@@ -31,35 +36,57 @@ public class IndexService {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexService.class);
 
-    public List<IndexedMedia> indexPath(String path) {
+    public boolean tryIndexPath(String path) {
 
-        var indexStart = LocalTime.now();
-        List<ImageMetadata> imageMetadataList = indexer.index(path);
-        var indexEnd = LocalTime.now();
-        logger.info("Time to index: {} ms", Duration.between(indexStart, indexEnd).toMillis());
-    public void indexPath(String path) {
+        if (!isScanning.compareAndSet(false, true)) {
+            logger.error("failed to start scanning, scanning already in progress");
+            return false;
+        }
 
-        List<Path> paths = walkDirectory(path);
-        // should walk it first to get metadata
+        Thread.ofVirtual().start(() ->{
+            try {
+                List<Path> paths = walkDirectory(path);
 
-        var hashStart = LocalTime.now();
-        var indexedMedia = metadataExtractorService.extractMetadata(paths);
-        var hashEnd = LocalTime.now();
-        logger.info("Time to Extract metadata: {} ms", Duration.between(hashStart, hashEnd).toMillis());
+                var indexedMedia = Extraction(paths);
 
+                var hashToPath = generateThumbnails(indexedMedia);
+
+                // TODO: dont' like the mutation
+                indexedMedia
+                        .forEach(m -> {
+                            m.setThumbnailPath(hashToPath.getOrDefault(m.getHash(), null));
+                        });
+
+
+                persist(indexedMedia);
+            } catch (Exception e) {
+                logger.error("Scan Failed: {}", e);
+            } finally {;
+                logger.debug("Scanning flag is released");
+                isScanning.set(false);
+            }
+        });
+
+        logger.info("Started Indexing for {}", path);
+
+        return true;
+
+    }
+
+    private Map<String, String> generateThumbnails(List<IndexedMedia> indexedMedia) {
         var generateStart = LocalTime.now();
         var hashToPath = thumbnailService.generateThumbnails(indexedMedia.stream().collect(Collectors.toMap(IndexedMedia::getFullPath, IndexedMedia::getHash)));
         var generateEnd = LocalTime.now();
         logger.info("Time to generate thumbnails: {} ms", Duration.between(generateStart, generateEnd).toMillis());
+        return hashToPath;
+    }
 
-        // TODO: dont' like the mutation
-        indexedMedia
-                .forEach(m -> {
-                    m.setThumbnailPath(hashToPath.getOrDefault(m.getHash(), null));
-                });
-
-
-        persist(indexedMedia);
+    private List<IndexedMedia> Extraction(List<Path> paths) {
+        var hashStart = LocalTime.now();
+        var indexedMedia = metadataExtractorService.extractMetadata(paths);
+        var hashEnd = LocalTime.now();
+        logger.info("Time to Extract metadata: {} ms", Duration.between(hashStart, hashEnd).toMillis());
+        return indexedMedia;
     }
 
     private void persist(List<IndexedMedia> indexedMedia) {

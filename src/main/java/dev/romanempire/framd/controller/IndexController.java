@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +21,10 @@ import java.nio.file.Path;
 @RequiredArgsConstructor
 public class IndexController {
 
+
     private final IndexService indexService;
 
+    // TODO: should probably not be used here, controller doesn't need to know this or controller this
     @Value("${media.library.path}")
     private String scanPath;
 
@@ -29,11 +32,10 @@ public class IndexController {
     private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
     @PostMapping("/scan")
-    public ResponseEntity<Void> scan(){
     public ResponseEntity<Void> scan() {
-        indexService.indexPath(scanPath);
-        return ResponseEntity.noContent().build();
-
+        return indexService.tryIndexPath(scanPath)
+                ? ResponseEntity.accepted().build()
+                : ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
     @GetMapping("/photo-count")
@@ -49,7 +51,8 @@ public class IndexController {
         var meta = indexService.getIndexInfo(hash); // TODO: handle 404
         var path = Path.of(meta.getThumbnailPath());
         Resource resource = new FileSystemResource(path);
-        return ResponseEntity.ok()
+        return ResponseEntity
+                .ok()
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(resource);
     }
