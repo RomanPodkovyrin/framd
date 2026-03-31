@@ -1,4 +1,4 @@
-package dev.romanempire.framd.extractor.impl;
+package dev.romanempire.framd.extractor.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +18,9 @@ public class FileHasher {
 
     public static Optional<String> hashFile(Path path) {
 
-        MessageDigest digest = null;
+
         try {
+            MessageDigest digest;
             digest = MessageDigest.getInstance("SHA-256");
             try (var fis = new FileInputStream(path.toFile());
                  var dis = new DigestInputStream(fis, digest)) {

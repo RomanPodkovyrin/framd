@@ -1,7 +1,7 @@
 package dev.romanempire.framd.extractor.service;
 
-import dev.romanempire.framd.extractor.impl.FileHasher;
-import dev.romanempire.framd.indexing.model.ExifData;
+import dev.romanempire.framd.extractor.util.FileHasher;
+import dev.romanempire.framd.extractor.model.ExifData;
 import dev.romanempire.framd.extractor.util.ImageTools;
 import dev.romanempire.framd.repository.IndexedMedia;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,10 +38,10 @@ public class MetadataExtractorService {
                     executor.submit(() -> {
                         try {
                             semaphore.acquire();
-                            Optional<ExifData> exifDataOptional =  ExifData.from(path);
+                            Optional<ExifData> exifDataOptional = ExifData.from(path);
                             Optional<String> hashOptional = FileHasher.hashFile(path);
 
-                            if (exifDataOptional.isPresent() && hashOptional.isPresent()){
+                            if (exifDataOptional.isPresent() && hashOptional.isPresent()) {
                                 var exif = exifDataOptional.get();
                                 ImageTools.FileNameParts fileNameParts = ImageTools.getFileParts(path);
                                 indexedMedia.add(IndexedMedia.builder()
@@ -50,11 +51,15 @@ public class MetadataExtractorService {
                                         .extension(fileNameParts.extension())
                                         .captureTime(exif.getCaptureDate().orElse(null))
                                         .lastIndexedTime(LocalDateTime.now())
-//                                        .lastModifiedTime(LocalDateTime.now()) // todo
+                                        .lastModifiedTime(Files
+                                                .getLastModifiedTime(path)
+                                                .toInstant()
+                                                .atZone(ZoneId.systemDefault())
+                                                .toLocalDateTime())
                                         .width(exif.getWidth().orElse(null))
                                         .height(exif.getHeight().orElse(null))
                                         .sizeInBytes(Files.size(path))
-//                                    .thumbnailPath(null)
+//                                    .previewPath(null)
                                         .build());
                             } else {
                                 logger.error("Exif or hash not made for {}", path);

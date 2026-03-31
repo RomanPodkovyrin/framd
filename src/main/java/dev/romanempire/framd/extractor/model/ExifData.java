@@ -1,4 +1,4 @@
-package dev.romanempire.framd.indexing.model;
+package dev.romanempire.framd.extractor.model;
 
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;

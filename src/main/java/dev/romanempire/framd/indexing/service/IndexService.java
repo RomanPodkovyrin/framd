@@ -4,7 +4,7 @@ import dev.romanempire.framd.extractor.service.MetadataExtractorService;
 import dev.romanempire.framd.indexing.impl.Indexer;
 import dev.romanempire.framd.repository.IndexedMedia;
 import dev.romanempire.framd.repository.IndexedMediaRepo;
-import dev.romanempire.framd.thumbnails.ThumbnailService;
+import dev.romanempire.framd.extractor.service.PreviewService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public class IndexService {
 
     private final MetadataExtractorService metadataExtractorService;
 
-    private final ThumbnailService thumbnailService;
+    private final PreviewService previewService;
 
     private final IndexedMediaRepo indexedMediaRepo;
 
@@ -47,12 +47,12 @@ public class IndexService {
 
                 var indexedMedia = Extraction(paths);
 
-                var hashToPath = generateThumbnails(indexedMedia);
+                var hashToPath = generatePreviews(indexedMedia);
 
                 // TODO: dont' like the mutation
                 indexedMedia
                         .forEach(m -> {
-                            m.setThumbnailPath(hashToPath.getOrDefault(m.getHash(), null));
+                            m.setPreviewPath(hashToPath.getOrDefault(m.getHash(), null));
                         });
 
 
@@ -72,11 +72,11 @@ public class IndexService {
 
     }
 
-    private Map<String, String> generateThumbnails(List<IndexedMedia> indexedMedia) {
+    private Map<String, String> generatePreviews(List<IndexedMedia> indexedMedia) {
         var generateStart = LocalTime.now();
-        var hashToPath = thumbnailService.generateThumbnails(indexedMedia.stream().collect(Collectors.toMap(IndexedMedia::getFullPath, IndexedMedia::getHash)));
+        var hashToPath = previewService.generatePreviews(indexedMedia.stream().collect(Collectors.toMap(IndexedMedia::getFullPath, IndexedMedia::getHash)));
         var generateEnd = LocalTime.now();
-        logger.info("Time to generate thumbnails: {} ms", Duration.between(generateStart, generateEnd).toMillis());
+        logger.info("Time to generate previews: {} ms", Duration.between(generateStart, generateEnd).toMillis());
         return hashToPath;
     }
 
@@ -118,7 +118,7 @@ public class IndexService {
         return indexedMediaRepo.count();
     }
 
-    public Optional<IndexedMedia> getIndexInfoDateOrderedList(String hash) {
+    public Optional<IndexedMedia> getIndexMediaByHash(String hash) {
         try {
             return Optional.of(indexedMediaRepo.getAllByHash(hash).getFirst());
         } catch (NoSuchElementException e) {
@@ -126,8 +126,8 @@ public class IndexService {
         }
     }
 
-    public Optional<Path> getThumbnailPath(String hash) {
-        return getIndexInfoDateOrderedList(hash)
-                .map(p -> Path.of(p.getThumbnailPath()));
+    public Optional<Path> getPreviewPath(String hash) {
+        return getIndexMediaByHash(hash)
+                .map(p -> Path.of(p.getPreviewPath()));
     }
 }

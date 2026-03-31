@@ -1,8 +1,6 @@
 package dev.romanempire.framd.repository;
 
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -40,7 +38,7 @@ public class IndexedMedia {
     @Column(nullable = false)
     private Long sizeInBytes;
     @Column(nullable = true)
-    private String thumbnailPath;
+    private String previewPath;
 
     public String getFullPath() {
         return path + "/" + name + ((!extension.isEmpty()) ? "." + extension : "");
