@@ -1,5 +1,6 @@
 package dev.romanempire.framd.extractor.service;
 
+import dev.romanempire.framd.repository.IndexedMedia;
 import net.coobird.thumbnailator.Thumbnails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +10,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
@@ -27,13 +29,8 @@ public class PreviewService {
     ///
     /// Generates Previews for each Path passed
     ///
-    /// @param hashesByPath Map of String path to String Hash
-    /// @return Map of String hash to generated thumbnail path
-    public Map<String, String> generateThumbnails(Map<String, String> hashesByPath) {
-        Map<String, String> thumbnailPathsByHash = new ConcurrentHashMap<>();
-    /// @return Map of String hash to generated preview path
-    public Map<String, String> generatePreviews(Map<String, String> hashesByPath) {
-        Map<String, String> previewPathToHash = new ConcurrentHashMap<>();
+    public List<IndexedMedia> generatePreviews(List<IndexedMedia> indexedMedia) {
+        List<IndexedMedia> indexedMediaWithPreview = Collections.synchronizedList(new ArrayList<>());
 
         logger.info("Generating Previews");
 
@@ -42,21 +39,21 @@ public class PreviewService {
             Files.createDirectories(thumbsDir); // no-op if already exists
         } catch (IOException e) {
             logger.error("Failed to make Preview Directory {} with error: {}", previewPath, e.getMessage());
-            return previewPathToHash;
+            return indexedMedia;
         }
 
         var semaphore = new Semaphore(20);
 
 
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            hashesByPath.forEach((path, hash) ->
+            indexedMedia.forEach(media ->
                     executor.submit(() -> {
                         try {
                             semaphore.acquire();
-                            var outputPath = generatePreview(path);
-                            previewPathToHash.put(hash, outputPath.toString());
+                            var outputPath = generatePreview(media.getFullPath());
+                            indexedMediaWithPreview.add(media.withPreviewPath(outputPath.toString()));
                         } catch (IOException e) {
-                            logger.error("Failed generating hash: {} with error {}", hash, e.getMessage());
+                            logger.error("Failed generating hash: {} with error {}", media.getHash(), e.getMessage());
                         } catch (InterruptedException e) {
                             logger.error("Semaphore acquire got interrupted: {}", e.getMessage());
                         } finally {
@@ -64,8 +61,8 @@ public class PreviewService {
                         }
                     }));
         }
-        logger.info("Generated {}/{} files", previewPathToHash.size(), hashesByPath.size());
-        return previewPathToHash;
+        logger.info("Generated {}/{} files", indexedMediaWithPreview.size(), indexedMediaWithPreview.size());
+        return indexedMediaWithPreview;
     }
 
 

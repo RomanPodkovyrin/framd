@@ -47,16 +47,11 @@ public class IndexService {
 
                 var indexedMedia = Extraction(paths);
 
-                var hashToPath = generatePreviews(indexedMedia);
-
-                // TODO: dont' like the mutation
-                indexedMedia
-                        .forEach(m -> {
-                            m.setPreviewPath(hashToPath.getOrDefault(m.getHash(), null));
-                        });
+                var indexedMediaWithPreviews = generatePreviews(indexedMedia);
 
 
-                persist(indexedMedia);
+
+                persist(indexedMediaWithPreviews);
             } catch (Exception e) {
                 logger.error("Scan Failed: {}", e);
             } finally {
@@ -72,12 +67,12 @@ public class IndexService {
 
     }
 
-    private Map<String, String> generatePreviews(List<IndexedMedia> indexedMedia) {
+    private List<IndexedMedia> generatePreviews(List<IndexedMedia> indexedMedia) {
         var generateStart = LocalTime.now();
-        var hashToPath = previewService.generatePreviews(indexedMedia.stream().collect(Collectors.toMap(IndexedMedia::getFullPath, IndexedMedia::getHash)));
+        var indexedMediaWithPreviews = previewService.generatePreviews(indexedMedia);
         var generateEnd = LocalTime.now();
         logger.info("Time to generate previews: {} ms", Duration.between(generateStart, generateEnd).toMillis());
-        return hashToPath;
+        return indexedMediaWithPreviews;
     }
 
     private List<IndexedMedia> Extraction(List<Path> paths) {
