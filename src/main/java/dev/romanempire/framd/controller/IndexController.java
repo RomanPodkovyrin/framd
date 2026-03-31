@@ -47,14 +47,12 @@ public class IndexController {
     }
 
     @GetMapping("/thumbnail/{hash}")
-    public ResponseEntity<Resource> getThumbnail(@PathVariable String hash) {
-        var meta = indexService.getIndexInfo(hash); // TODO: handle 404
-        var path = Path.of(meta.getThumbnailPath());
-        Resource resource = new FileSystemResource(path);
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.IMAGE_JPEG)
-                .body(resource);
+    public ResponseEntity<FileSystemResource> getThumbnail(@PathVariable String hash) {
+        var path = indexService.getThumbnailPath(hash);
+        return path.map(p -> ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(new FileSystemResource(p)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
 

@@ -9,13 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -43,7 +41,7 @@ public class IndexService {
             return false;
         }
 
-        Thread.ofVirtual().start(() ->{
+        Thread.ofVirtual().start(() -> {
             try {
                 List<Path> paths = walkDirectory(path);
 
@@ -61,7 +59,8 @@ public class IndexService {
                 persist(indexedMedia);
             } catch (Exception e) {
                 logger.error("Scan Failed: {}", e);
-            } finally {;
+            } finally {
+                ;
                 logger.debug("Scanning flag is released");
                 isScanning.set(false);
             }
@@ -90,7 +89,6 @@ public class IndexService {
     }
 
     private void persist(List<IndexedMedia> indexedMedia) {
-        // save into db
         var persistStart = LocalTime.now();
         indexedMediaRepo.saveAll(indexedMedia);
         var persistEnd = LocalTime.now();
@@ -105,15 +103,31 @@ public class IndexService {
         return imageMetadataList;
     }
 
-    public List<IndexedMedia> getIndexInfo() {
-        return indexedMediaRepo.findAll();
+    public List<IndexedMedia> getIndexInfoDateOrderedList() {
+        return indexedMediaRepo
+                .findAll()
+                .stream()
+                .sorted(
+                        Comparator
+                                .comparing(
+                                        IndexedMedia::getCaptureTime,
+                                        Comparator.nullsLast(Comparator.naturalOrder()))).toList();
     }
 
     public Long getCount() {
         return indexedMediaRepo.count();
     }
 
-    public IndexedMedia getIndexInfo(String hash) {
-        return indexedMediaRepo.getAllByHash(hash).getFirst();
+    public Optional<IndexedMedia> getIndexInfoDateOrderedList(String hash) {
+        try {
+            return Optional.of(indexedMediaRepo.getAllByHash(hash).getFirst());
+        } catch (NoSuchElementException e) {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Path> getThumbnailPath(String hash) {
+        return getIndexInfoDateOrderedList(hash)
+                .map(p -> Path.of(p.getThumbnailPath()));
     }
 }

@@ -18,7 +18,7 @@ public class UIController {
 
     @GetMapping("/gallery")
     public String gallery(Model model) {
-        model.addAttribute("images", indexService.getIndexInfo());
+        model.addAttribute("images", indexService.getIndexInfoDateOrderedList());
         return "gallery :: grid";
     }
 
