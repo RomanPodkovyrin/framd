@@ -50,7 +50,9 @@ public class PreviewService {
                     executor.submit(() -> {
                         try {
                             semaphore.acquire();
-                            var outputPath = generatePreview(media.getFullPath());
+                            var sourcePath = Path.of(media.getFullPath());
+                            var outputPath = Path.of(previewPath).resolve(Path.of(media.generatePreviewPathFromHash()));
+                            generatePreview(sourcePath, outputPath);
                             indexedMediaWithPreview.add(media.withPreviewPath(outputPath.toString()));
                         } catch (IOException e) {
                             logger.error("Failed generating hash: {} with error {}", media.getHash(), e.getMessage());
@@ -61,7 +63,7 @@ public class PreviewService {
                         }
                     }));
         }
-        logger.info("Generated {}/{} files", indexedMediaWithPreview.size(), indexedMediaWithPreview.size());
+        logger.info("Generated {}/{} files", indexedMediaWithPreview.size(), indexedMedia.size());
         return indexedMediaWithPreview;
     }
 
@@ -69,15 +71,11 @@ public class PreviewService {
     ///
     /// Generates a preview
     /// Will override if already exists
-    private Path generatePreview(String path) throws IOException {
-        var sourcePath = Path.of(path);
-        var outputDir = Path.of(previewPath).resolve(sourcePath.getRoot().relativize(sourcePath.getParent()));
-        var outputPath = outputDir.resolve(sourcePath.getFileName());
-        Files.createDirectories(outputDir);
+    private void generatePreview(Path sourcePath, Path outputPath) throws IOException {
+        Files.createDirectories(outputPath.getParent());
         Thumbnails.of(sourcePath.toFile())
                 .scale(0.3)
                 .outputQuality(0.7)
                 .toFile(outputPath.toFile());
-        return outputPath;
     }
 }

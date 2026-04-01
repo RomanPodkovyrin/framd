@@ -15,7 +15,6 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,11 +44,20 @@ public class IndexService {
             try {
                 List<Path> paths = walkDirectory(path);
 
-                var indexedMedia = Extraction(paths);
+                var indexedMedia = extractMetadata(paths);
 
-                var indexedMediaWithPreviews = generatePreviews(indexedMedia);
+                // Determine stale and new files
+                var indexedMediaToDelete = new HashSet<>(getIndexInfoList());
+                var indexedMediaCurrent = new HashSet<>(indexedMediaToDelete);
+                var newIndexedMedia = new HashSet<>(indexedMedia);
+                indexedMediaToDelete.removeAll(newIndexedMedia);
+                newIndexedMedia.removeAll(indexedMediaCurrent);
 
+                logger.info("Will Delete {} stale files, and add {} new ones", indexedMediaToDelete.size(), newIndexedMedia.size());
 
+                indexedMediaRepo.deleteAllByIdInBatch(indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
+
+                var indexedMediaWithPreviews = generatePreviews(newIndexedMedia.stream().toList());
 
                 persist(indexedMediaWithPreviews);
             } catch (Exception e) {
@@ -75,7 +83,7 @@ public class IndexService {
         return indexedMediaWithPreviews;
     }
 
-    private List<IndexedMedia> Extraction(List<Path> paths) {
+    private List<IndexedMedia> extractMetadata(List<Path> paths) {
         var hashStart = LocalTime.now();
         var indexedMedia = metadataExtractorService.extractMetadata(paths);
         var hashEnd = LocalTime.now();
@@ -98,15 +106,18 @@ public class IndexService {
         return imageMetadataList;
     }
 
+    public List<IndexedMedia> getIndexInfoList() {
+        return indexedMediaRepo.findAll();
+    }
+
     public List<IndexedMedia> getIndexInfoDateOrderedList() {
-        return indexedMediaRepo
-                .findAll()
+        return getIndexInfoList()
                 .stream()
                 .sorted(
                         Comparator
                                 .comparing(
                                         IndexedMedia::getCaptureTime,
-                                        Comparator.nullsLast(Comparator.naturalOrder()))).toList();
+                                        Comparator.nullsLast(Comparator.reverseOrder()))).toList();
     }
 
     public Long getCount() {

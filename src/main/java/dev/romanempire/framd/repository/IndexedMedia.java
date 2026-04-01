@@ -27,7 +27,9 @@ public class IndexedMedia {
     private String extension;
     @Column(nullable = true)
     private LocalDateTime captureTime;
+    @EqualsAndHashCode.Exclude
     private LocalDateTime lastIndexedTime;
+    @EqualsAndHashCode.Exclude
     private LocalDateTime lastModifiedTime;
     @Column(nullable = true)
     private Integer width;
@@ -36,9 +38,18 @@ public class IndexedMedia {
     @Column(nullable = false)
     private Long sizeInBytes;
     @Column(nullable = true)
+    @EqualsAndHashCode.Exclude
     private String previewPath;
 
     public String getFullPath() {
-        return path + "/" + name + ((!extension.isEmpty()) ? "." + extension : "");
+        return path + "/" + name + getPossibleExtension();
+    }
+
+    private String getPossibleExtension() {
+        return (!extension.isEmpty()) ? "." + extension : "";
+    }
+
+    public String generatePreviewPathFromHash() {
+        return hash.substring(0, 2) + "/" + hash.substring(2, 4) + "/" + hash.substring(8) + getPossibleExtension();
     }
 }
