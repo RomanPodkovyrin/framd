@@ -19,7 +19,7 @@ public class ImageTools {
     }
 
     private static final Set<String> IMAGE_EXTENSIONS = Set.of(
-            "jpg", "jpeg", "png", "webp", "heic"
+            "jpg", "jpeg", "png", "webp", "gif", "bmp", "wbmp"
     );
 
     public static Boolean isImage(Path path) {
