@@ -76,7 +76,7 @@ public class IndexService {
 
                 persist(indexedMediaWithPreviews);
             } catch (Exception e) {
-                logger.error("Scan Failed: {}", e);
+                logger.error("Scan Failed: ", e);
             } finally {
                 ;
                 logger.debug("Scanning flag is released");
@@ -123,7 +123,7 @@ public class IndexService {
 
                 persist(indexedMediaWithPreviews);
             } catch (Exception e) {
-                logger.error("Scan Failed: {}", e);
+                logger.error("Scan Failed: ", e);
             } finally {
                 logger.debug("Scanning flag is released");
                 isScanning.set(false);
