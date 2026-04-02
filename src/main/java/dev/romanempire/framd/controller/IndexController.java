@@ -4,7 +4,6 @@ import dev.romanempire.framd.indexing.service.IndexService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,16 +20,11 @@ public class IndexController {
 
     private final IndexService indexService;
 
-    // TODO: should probably not be used here, controller doesn't need to know this or controller this
-    @Value("${media.library.path}")
-    private String scanPath;
-
-
     private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
     @PostMapping("/scan")
     public ResponseEntity<Void> scan() {
-        return indexService.tryIndexPath(scanPath)
+        return indexService.tryFullScan()
                 ? ResponseEntity.accepted().build()
                 : ResponseEntity.status(HttpStatus.CONFLICT).build();
     }

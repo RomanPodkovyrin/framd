@@ -55,7 +55,7 @@ public class PreviewService {
                             generatePreview(sourcePath, outputPath);
                             indexedMediaWithPreview.add(media.withPreviewPath(outputPath.toString()));
                         } catch (IOException e) {
-                            logger.error("Failed generating hash: {} with error {}", media.getHash(), e.getMessage());
+                            logger.error("Failed generating preview: {} with error {}", media.getHash(), e.getMessage());
                         } catch (InterruptedException e) {
                             logger.error("Semaphore acquire got interrupted: {}", e.getMessage());
                         } finally {

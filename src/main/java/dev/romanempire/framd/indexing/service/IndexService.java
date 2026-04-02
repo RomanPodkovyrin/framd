@@ -8,6 +8,7 @@ import dev.romanempire.framd.extractor.service.PreviewService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -33,16 +34,30 @@ public class IndexService {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexService.class);
 
-    public boolean tryIndexPath(String path) {
+    @Value("${media.library.path}")
+    private String scanPath;
 
+    public boolean tryFullScan() {
+        return startFullScan(scanPath, true);
+    }
+
+    public boolean tryFullScan(String path) {
+        return startFullScan(path, true);
+    }
+
+    public boolean tryFullScan(String path, boolean isRecursive) {
+        return startFullScan(path, isRecursive);
+    }
+
+    private boolean startFullScan(String path, boolean isRecursive) {
         if (!isScanning.compareAndSet(false, true)) {
-            logger.error("failed to start scanning, scanning already in progress");
+            logger.error("Failed to start Full Scan, scanning already in progress");
             return false;
         }
 
         Thread.ofVirtual().start(() -> {
             try {
-                List<Path> paths = walkDirectory(path);
+                List<Path> paths = isRecursive ? walkDirectory(path) : list(path);
 
                 var indexedMedia = extractMetadata(paths);
 
@@ -72,7 +87,51 @@ public class IndexService {
         logger.info("Started Indexing for {}", path);
 
         return true;
+    }
 
+    public boolean tryPartialScan(String path) {
+        return startPartialScan(path);
+    }
+
+    public boolean startPartialScan(String path) {
+        if (!isScanning.compareAndSet(false, true)) {
+            logger.error("Failed to start partial scan, scanning already in progress");
+            return false;
+        }
+
+        logger.info("Starting Partial Scan for {}", path);
+        Thread.ofVirtual().start(() -> {
+            try {
+                List<Path> paths = list(path);
+
+                var indexedMedia = extractMetadata(paths);
+
+                // Determine stale and new files
+                var indexedMediaToDelete = new HashSet<>(getIndexInfoByPath(path));
+                System.out.println(indexedMediaToDelete);
+                var indexedMediaCurrent = new HashSet<>(indexedMediaToDelete);
+                var newIndexedMedia = new HashSet<>(indexedMedia);
+                indexedMediaToDelete.removeAll(newIndexedMedia);
+                newIndexedMedia.removeAll(indexedMediaCurrent);
+
+                logger.info("Will Delete {} stale files, and add {} new ones", indexedMediaToDelete.size(), newIndexedMedia.size());
+                newIndexedMedia.forEach(System.out::println);
+
+                indexedMediaRepo.deleteAllByIdInBatch(indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
+
+                var indexedMediaWithPreviews = generatePreviews(newIndexedMedia.stream().toList());
+
+                persist(indexedMediaWithPreviews);
+            } catch (Exception e) {
+                logger.error("Scan Failed: {}", e);
+            } finally {
+                logger.debug("Scanning flag is released");
+                isScanning.set(false);
+            }
+        });
+
+        logger.info("Started Indexing for {}", path);
+        return true;
     }
 
     private List<IndexedMedia> generatePreviews(List<IndexedMedia> indexedMedia) {
@@ -106,8 +165,28 @@ public class IndexService {
         return imageMetadataList;
     }
 
+    public List<Path> walkAndListDirsRecursively(String path) {
+        var indexStart = LocalTime.now();
+        List<Path> imageMetadataList = indexer.walkDirRecursively(path);
+        var indexEnd = LocalTime.now();
+        logger.info("Time to walk: {} ms {} files", Duration.between(indexStart, indexEnd).toMillis(), imageMetadataList.size());
+        return imageMetadataList;
+    }
+
+    public List<Path> list(String path) {
+        var indexStart = LocalTime.now();
+        List<Path> imageMetadataList = indexer.list(path);
+        var indexEnd = LocalTime.now();
+        logger.info("Time to walk: {} ms {} files", Duration.between(indexStart, indexEnd).toMillis(), imageMetadataList.size());
+        return imageMetadataList;
+    }
+
     public List<IndexedMedia> getIndexInfoList() {
         return indexedMediaRepo.findAll();
+    }
+
+    private List<IndexedMedia> getIndexInfoByPath(String path) {
+        return indexedMediaRepo.findAllByPath(path);
     }
 
     public List<IndexedMedia> getIndexInfoDateOrderedList() {
