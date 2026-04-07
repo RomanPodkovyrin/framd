@@ -16,30 +16,20 @@ public class FileHasher {
 
     private static final Logger logger = LoggerFactory.getLogger(FileHasher.class);
 
-    public static Optional<String> hashFile(Path path) {
+    public static Optional<String> hashFile(Path path) throws NoSuchAlgorithmException {
 
-
-        try {
-            MessageDigest digest;
-            digest = MessageDigest.getInstance("SHA-256");
-            try (var fis = new FileInputStream(path.toFile());
-                 var dis = new DigestInputStream(fis, digest)) {
-                byte[] buffer = new byte[8192]; // 8KB chunks
-                while (dis.read(buffer) != -1) {
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        MessageDigest digest;
+        digest = MessageDigest.getInstance("SHA-256");
+        try (var fis = new FileInputStream(path.toFile()); var dis = new DigestInputStream(fis, digest)) {
+            byte[] buffer = new byte[8192]; // 8KB chunks
+            while (dis.read(buffer) != -1) {
             }
-
-            byte[] hash = digest.digest();
-            return Optional.of(HexFormat.of().formatHex(hash));
-
-
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Failed to load the hashAlgorithm: {}", e.getMessage());
+        } catch (IOException e) {
+            return Optional.empty();
         }
 
+        byte[] hash = digest.digest();
+        return Optional.of(HexFormat.of().formatHex(hash));
 
-        return Optional.empty();
     }
 }
