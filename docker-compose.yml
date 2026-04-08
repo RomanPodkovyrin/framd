@@ -1,0 +1,51 @@
+services:
+
+  db:
+    #    https://hub:docker.com/_/postgres
+    image: postgres:17-alpine3.23
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: example
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  #  adminer:
+  #    image: adminer
+  #    restart: always
+  #    ports:
+  #      - "8080:8080"
+  #    depends_on:
+  #      db:
+  #        condition: service_healthy
+
+  framd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "7878:7878"
+    environment:
+      MEDIA_LIBRARY_PATH: /media
+      PREVIEW_PATH: /app/previews
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: example
+      ADMIN_PASSWORD: password
+    volumes:
+      - ${MEDIA_PATH:-/Users/roman/Downloads}:/media:ro
+      - ${PREVIEW_LOCAL_PATH:-./.previews}:/previews
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
