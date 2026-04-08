@@ -32,8 +32,6 @@ public class ImageTools {
             return false;
         }
 
-        System.out.println(fileNameParts.extension);
-
 
         return IMAGE_EXTENSIONS.contains(fileNameParts.extension().toLowerCase());
     }

@@ -38,7 +38,7 @@ public class PreviewService {
         try {
             Files.createDirectories(thumbsDir); // no-op if already exists
         } catch (IOException e) {
-            logger.error("Failed to make Preview Directory {} with error: {}", previewPath, e.getMessage());
+            logger.error("Failed to make Preview Directory {} with error: {}", previewPath, e.toString());
             return indexedMedia;
         }
 
@@ -58,6 +58,8 @@ public class PreviewService {
                             logger.error("Failed generating preview: {} with error {}", media.getHash(), e.getMessage());
                         } catch (InterruptedException e) {
                             logger.error("Semaphore acquire got interrupted: {}", e.getMessage());
+                        } catch (Exception e) {
+                            logger.error("Generic error: ", e);
                         } finally {
                             semaphore.release();
                         }

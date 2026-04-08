@@ -38,6 +38,8 @@ public class FileWatcherService {
             List<Path> paths = indexService.walkAndListDirsRecursively(scanPath);
             paths.forEach(path -> {
                 try {
+                    //TODO: Bug this only registers paths at the start once,
+                    // but then as more paths are added it doesn't keep track of them by registering them
                     path.register(
                             watchService,
                             StandardWatchEventKinds.ENTRY_CREATE,

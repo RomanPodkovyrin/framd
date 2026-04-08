@@ -71,6 +71,7 @@ public class IndexService {
                 logger.info("Will Delete {} stale files, and add {} new ones", indexedMediaToDelete.size(), newIndexedMedia.size());
 
                 indexedMediaRepo.deleteAllByIdInBatch(indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
+                //TODO: need to have a scheduled clean up service to go threw previews and check if they are still in the db or make a table where deleted previews are kept
 
                 var indexedMediaWithPreviews = generatePreviews(newIndexedMedia.stream().toList());
 
@@ -93,7 +94,7 @@ public class IndexService {
         return startPartialScan(path);
     }
 
-    public boolean startPartialScan(String path) {
+    private boolean startPartialScan(String path) {
         if (!isScanning.compareAndSet(false, true)) {
             logger.error("Failed to start partial scan, scanning already in progress");
             return false;
@@ -108,7 +109,6 @@ public class IndexService {
 
                 // Determine stale and new files
                 var indexedMediaToDelete = new HashSet<>(getIndexInfoByPath(path));
-                System.out.println(indexedMediaToDelete);
                 var indexedMediaCurrent = new HashSet<>(indexedMediaToDelete);
                 var newIndexedMedia = new HashSet<>(indexedMedia);
                 indexedMediaToDelete.removeAll(newIndexedMedia);
@@ -128,6 +128,7 @@ public class IndexService {
                 logger.debug("Scanning flag is released");
                 isScanning.set(false);
             }
+            logger.info("Partial scan is finished");
         });
 
         logger.info("Started Indexing for {}", path);
