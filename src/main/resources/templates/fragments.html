@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Framd</title>
+    <link rel="stylesheet" th:href="@{/styles.css}">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
+            integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
+            crossorigin="anonymous"></script>
+</head>
+
+<header th:fragment="header(page)">
+    <a href="/" class="logo">Framd</a>
+    <nav>
+        <a th:if="${page == 'admin'}" href="/" class="nav-link nav-control">Gallery</a>
+        <button class="scan-btn nav-control" hx-post="/scan" hx-swap="none">Scan</button>
+        <a th:if="${page == 'gallery'}" href="/admin" class="nav-link nav-control">Admin</a>
+    </nav>
+</header>
+
+<footer th:fragment="footer(label)">
+    <span th:text="'Framd - ' + ${label}">Framd</span>
+    <span hx-get="/photo-count" hx-trigger="load, every 15s" hx-swap="innerHTML"></span>
+</footer>
+
+</html>

@@ -33,5 +33,9 @@ public class UIController {
         return "index.html";
     }
 
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin.html";
+    }
 
 }
