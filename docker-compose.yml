@@ -39,7 +39,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: example
-      ADMIN_PASSWORD: password
+#      ADMIN_PASSWORD: password
     volumes:
       - ${MEDIA_PATH:-/Users/roman/Downloads}:/media:ro
       - ${PREVIEW_LOCAL_PATH:-./.previews}:/previews
