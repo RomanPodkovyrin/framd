@@ -1,6 +1,7 @@
 package dev.romanempire.framd.indexing.service;
 
 import dev.romanempire.framd.extractor.service.MetadataExtractorService;
+import dev.romanempire.framd.indexing.model.ScanContext;
 import dev.romanempire.framd.indexing.impl.Indexer;
 import dev.romanempire.framd.repository.IndexedMedia;
 import dev.romanempire.framd.repository.IndexedMediaRepo;
@@ -15,14 +16,13 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
 public class IndexService {
 
 
-    private final AtomicBoolean isScanning = new AtomicBoolean(false);
+    private final ScanContext scanContext;
 
     private final Indexer indexer;
 
@@ -50,7 +50,7 @@ public class IndexService {
     }
 
     private boolean startFullScan(String path, boolean isRecursive) {
-        if (!isScanning.compareAndSet(false, true)) {
+        if (!scanContext.startScan()) {
             logger.error("Failed to start Full Scan, scanning already in progress");
             return false;
         }
@@ -81,7 +81,7 @@ public class IndexService {
             } finally {
                 ;
                 logger.debug("Scanning flag is released");
-                isScanning.set(false);
+                scanContext.endScan();
             }
         });
 
@@ -95,7 +95,7 @@ public class IndexService {
     }
 
     private boolean startPartialScan(String path) {
-        if (!isScanning.compareAndSet(false, true)) {
+        if (!scanContext.startScan()) {
             logger.error("Failed to start partial scan, scanning already in progress");
             return false;
         }
@@ -126,7 +126,7 @@ public class IndexService {
                 logger.error("Scan Failed: ", e);
             } finally {
                 logger.debug("Scanning flag is released");
-                isScanning.set(false);
+                scanContext.endScan();
             }
             logger.info("Partial scan is finished");
         });
@@ -215,5 +215,10 @@ public class IndexService {
     public Optional<Path> getPreviewPath(String hash) {
         return getIndexMediaByHash(hash)
                 .map(p -> Path.of(p.getPreviewPath()));
+    }
+
+    public ScanContext.ScanStatus getScanStatus() {
+
+        return scanContext.getScanStatus();
     }
 }
