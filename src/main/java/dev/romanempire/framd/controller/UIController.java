@@ -22,6 +22,12 @@ public class UIController {
         return "gallery :: grid";
     }
 
+    @GetMapping("/scan/status")
+    public String getScanStatus(Model model) {
+        model.addAttribute("status", indexService.getScanStatus());
+        return "fragments :: scan-status(status=${status})";
+    }
+
     ///
     /// Returns the gallery grid fragment for HTMX partial page updates.
     /// Renders indexed images

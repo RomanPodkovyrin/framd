@@ -15,10 +15,25 @@
     <a href="/" class="logo">Framd</a>
     <nav>
         <a th:if="${page == 'admin'}" href="/" class="nav-link nav-control">Gallery</a>
+        <span class="scan-badge nav-control"
+              hx-get="/scan/status"
+              hx-trigger="load, every 5s"
+              hx-swap="innerHTML">
+            <span class="scan-dot"></span>
+            <span class="scan-label">Idle</span>
+        </span>
         <button class="scan-btn nav-control" hx-post="/scan" hx-swap="none">Scan</button>
         <a th:if="${page == 'gallery'}" href="/admin" class="nav-link nav-control">Admin</a>
     </nav>
 </header>
+
+<th:block th:fragment="scan-status(status)">
+    <span th:classappend="${status.scanning} ? 'scan-dot--active'" class="scan-dot"></span>
+    <span th:classappend="${status.scanning} ? 'scan-label--active'" class="scan-label"
+          th:text="${status.scanning} ? 'Scanning' : 'Idle'"></span>
+    <span th:if="${status.scanning}" class="scan-detail"
+          th:text="${status.processed + ' / ' + status.total}"></span>
+</th:block>
 
 <footer th:fragment="footer(label)">
     <span th:text="'Framd - ' + ${label}">Framd</span>
