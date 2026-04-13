@@ -6,15 +6,14 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import dev.romanempire.framd.extractor.util.ImageTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.file.Path;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExifData {
     private final Metadata metadata;
@@ -26,19 +25,15 @@ public class ExifData {
     }
 
     public static Optional<ExifData> from(Path path) {
-        return ImageTools
-                .getMetadata(path)
-                .map(ExifData::new);
+        return ImageTools.getMetadata(path).map(ExifData::new);
     }
 
     private <T extends Directory> Optional<Date> getDate(Class<T> dirType, int tag) {
-        return Optional.ofNullable(metadata.getFirstDirectoryOfType(dirType))
-                .map(d -> d.getDate(tag));
+        return Optional.ofNullable(metadata.getFirstDirectoryOfType(dirType)).map(d -> d.getDate(tag));
     }
 
     private <T extends Directory> Optional<String> getString(Class<T> dirType, int tag) {
-        return Optional.ofNullable(metadata.getFirstDirectoryOfType(dirType))
-                .map(d -> d.getString(tag));
+        return Optional.ofNullable(metadata.getFirstDirectoryOfType(dirType)).map(d -> d.getString(tag));
     }
 
     private <T extends Directory> Optional<Integer> getInt(Class<T> dirType, int tag) {
@@ -53,8 +48,7 @@ public class ExifData {
                 .map(d -> d.getDoubleObject(tag));
     }
 
-    private static final DateTimeFormatter EXIF_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
+    private static final DateTimeFormatter EXIF_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
 
     public Optional<LocalDateTime> getCaptureDate() {
 
@@ -80,4 +74,3 @@ public class ExifData {
                 .or(() -> getInt(ExifIFD0Directory.class, ExifIFD0Directory.TAG_IMAGE_HEIGHT));
     }
 }
-

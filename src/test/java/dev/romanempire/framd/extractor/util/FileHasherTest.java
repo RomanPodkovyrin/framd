@@ -1,15 +1,14 @@
 package dev.romanempire.framd.extractor.util;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class FileHasherTest {
 
@@ -24,7 +23,6 @@ class FileHasherTest {
 
         Files.writeString(testFile, "Picture of a cute cat");
     }
-
 
     @Test
     void hashFileSuccess() throws NoSuchAlgorithmException {

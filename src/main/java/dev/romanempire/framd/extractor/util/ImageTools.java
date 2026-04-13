@@ -3,23 +3,20 @@ package dev.romanempire.framd.extractor.util;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImageTools {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageTools.class);
 
-    public record FileNameParts(String name, String extension) {
-    }
+    public record FileNameParts(String name, String extension) {}
 
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp", "gif", "bmp", "wbmp");
-
 
     private static final Set<String> ILLEGAL_EXTENSIONS = Set.of("", "/", ".", "..");
 
@@ -31,7 +28,6 @@ public class ImageTools {
             logger.error(ex.getMessage());
             return false;
         }
-
 
         return IMAGE_EXTENSIONS.contains(fileNameParts.extension().toLowerCase());
     }
@@ -52,12 +48,10 @@ public class ImageTools {
             return new FileNameParts(fileName.substring(1), "");
         }
 
-
         var name = fileName.substring(0, dotIndex);
         var extension = fileName.substring(dotIndex + 1);
         return new FileNameParts(name.charAt(0) == '.' ? name.substring(1) : name, extension);
     }
-
 
     public static Optional<Metadata> getMetadata(Path path) {
 

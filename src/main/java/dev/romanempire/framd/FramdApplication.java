@@ -9,5 +9,4 @@ public class FramdApplication {
     static void main(String[] args) {
         SpringApplication.run(FramdApplication.class, args);
     }
-
 }

@@ -43,5 +43,4 @@ public class UIController {
     public String admin() {
         return "admin.html";
     }
-
 }

@@ -1,13 +1,11 @@
 package dev.romanempire.framd.repository;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.*;
-
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Data
 @Entity
@@ -19,24 +17,34 @@ import java.time.LocalDateTime;
 public class IndexedMedia {
     @Id
     private String hash;
+
     @Column(nullable = false)
     private String path;
+
     @Column(nullable = false)
     private String name;
+
     @Column(nullable = false)
     private String extension;
+
     @Column(nullable = true)
     private LocalDateTime captureTime;
+
     @EqualsAndHashCode.Exclude
     private LocalDateTime lastIndexedTime;
+
     @EqualsAndHashCode.Exclude
     private LocalDateTime lastModifiedTime;
+
     @Column(nullable = true)
     private Integer width;
+
     @Column(nullable = true)
     private Integer height;
+
     @Column(nullable = false)
     private Long sizeInBytes;
+
     @Column(nullable = true)
     @EqualsAndHashCode.Exclude
     private String previewPath;

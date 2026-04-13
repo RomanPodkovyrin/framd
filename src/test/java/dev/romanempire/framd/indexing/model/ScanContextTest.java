@@ -3,12 +3,11 @@ package dev.romanempire.framd.indexing.model;
 import static org.junit.jupiter.api.Assertions.*;
 
 import dev.romanempire.framd.repository.IndexedMedia;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 class ScanContextTest {
 
@@ -32,9 +31,7 @@ class ScanContextTest {
 
         assertTrue(scanContext.startScan(), "Should allow scanning again");
         assertTrue(scanContext.getScanStatus().scanning(), "Scanning should be in progress");
-
     }
-
 
     @Test
     void enqueueMessagesForPersistence() throws InterruptedException {
@@ -48,17 +45,18 @@ class ScanContextTest {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
         });
         // Try inserting invalid message
-        var ex = assertThrows(IllegalArgumentException.class, () -> scanContext.enqueueForPersistence(null), "should reject null object");
+        var ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> scanContext.enqueueForPersistence(null),
+                "should reject null object");
 
         assertEquals("item must not be null", ex.getMessage());
         // indicate the queue is done
         scanContext.completePersistQueue();
         var processedList = new ArrayList<>();
         scanContext.drainPersistenceQueue(processedList::add);
-
 
         assertEquals(numOfMessages, processedList.size());
         assertEquals(numOfMessages, scanContext.getScanStatus().processed());
@@ -78,8 +76,7 @@ class ScanContextTest {
     void drainPersistenceQueueBlocksWithoutDone() throws InterruptedException {
         var thread = Thread.ofVirtual().start(() -> {
             try {
-                scanContext.drainPersistenceQueue(_ -> {
-                });
+                scanContext.drainPersistenceQueue(_ -> {});
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -89,6 +86,5 @@ class ScanContextTest {
         scanContext.completePersistQueue();
         thread.join(6000); // wait to terminate
         assertFalse(thread.isAlive(), "Poison pill has been send, should have terminated");
-
     }
 }

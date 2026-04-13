@@ -2,16 +2,15 @@ package dev.romanempire.framd.indexing.model;
 
 import dev.romanempire.framd.indexing.model.message.ScanMessage;
 import dev.romanempire.framd.repository.IndexedMedia;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /// Holds the shared state for an active media indexing scan.
 ///
@@ -36,7 +35,6 @@ public class ScanContext {
             total.put(stage, new AtomicLong(0));
         }
     }
-
 
     private Long getStageProcessedStat(ScanStage stage) {
         return processed.get(stage).get();
@@ -64,7 +62,8 @@ public class ScanContext {
 
     /// Attempts to start a scan by atomically setting the scanning flag.
     ///
-    /// @return `true` if the scan was started successfully, `false` if a scan is already in progress
+    /// @return `true` if the scan was started successfully, `false` if a scan is already in
+    // progress
     public boolean startScan() {
         var isFreeToStart = isScanning.compareAndSet(false, true);
         if (isFreeToStart) {
@@ -79,14 +78,12 @@ public class ScanContext {
         isScanning.set(false);
     }
 
-
     /// A snapshot of the current scan state.
     ///
     /// @param scanning  whether a scan is currently in progress
     /// @param processed the number of items processed in the persistence stage
     /// @param total     the total number of items expected in the persistence stage
-    public record ScanStatus(boolean scanning, Long processed, Long total) {
-    }
+    public record ScanStatus(boolean scanning, Long processed, Long total) {}
 
     /// Returns a snapshot of the current scan state.
     ///
@@ -106,10 +103,10 @@ public class ScanContext {
     public void enqueueForPersistence(IndexedMedia item) throws InterruptedException, IllegalArgumentException {
         if (item == null) throw new IllegalArgumentException("item must not be null");
         persistQueue.put(new ScanMessage.Data<>(item));
-
     }
 
-    /// Signals the drain loop that all items have been enqueued by sending a [ScanMessage.Done] message.
+    /// Signals the drain loop that all items have been enqueued by sending a [ScanMessage.Done]
+    // message.
     ///
     /// @return `true` if the signal was sent, `false` if the thread was interrupted
     public boolean completePersistQueue() {

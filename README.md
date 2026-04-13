@@ -18,6 +18,16 @@ See [FEATURES.md](FEATURES.md) for the full list of planned and in-progress feat
 ```bash
 ./mvnw clean test jacoco:report
 ```
+### Linting
+
+spotless
+```bash
+./mvnw spotless:check
+```
+
+```bash
+./mvnw spotless:apply
+```
 ## API Docs
 
 Once the app is running, the OpenAPI spec is available at:

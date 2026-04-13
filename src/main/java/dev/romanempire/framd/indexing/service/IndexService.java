@@ -1,27 +1,25 @@
 package dev.romanempire.framd.indexing.service;
 
 import dev.romanempire.framd.extractor.service.MetadataExtractorService;
-import dev.romanempire.framd.indexing.model.ScanContext;
+import dev.romanempire.framd.extractor.service.PreviewService;
 import dev.romanempire.framd.indexing.impl.Indexer;
+import dev.romanempire.framd.indexing.model.ScanContext;
 import dev.romanempire.framd.indexing.model.ScanStage;
 import dev.romanempire.framd.repository.IndexedMedia;
 import dev.romanempire.framd.repository.IndexedMediaRepo;
-import dev.romanempire.framd.extractor.service.PreviewService;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Path;
-import java.time.Duration;
-import java.time.LocalTime;
-import java.util.*;
-
 @Service
 @RequiredArgsConstructor
 public class IndexService {
-
 
     private final ScanContext scanContext;
 
@@ -62,7 +60,6 @@ public class IndexService {
 
                 var indexedMedia = extractMetadata(paths);
 
-
                 // Determine stale and new files
                 var indexedMediaToDelete = new HashSet<>(getIndexInfoList());
                 var indexedMediaCurrent = new HashSet<>(indexedMediaToDelete);
@@ -70,10 +67,17 @@ public class IndexService {
                 indexedMediaToDelete.removeAll(newIndexedMedia);
                 newIndexedMedia.removeAll(indexedMediaCurrent);
 
-                logger.info("Will Delete {} stale files, and add {} new ones", indexedMediaToDelete.size(), newIndexedMedia.size());
+                logger.info(
+                        "Will Delete {} stale files, and add {} new ones",
+                        indexedMediaToDelete.size(),
+                        newIndexedMedia.size());
 
-                indexedMediaRepo.deleteAllByIdInBatch(indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
-                //TODO: need to have a scheduled clean up service to go threw previews and check if they are still in the db or make a table where deleted previews are kept
+                indexedMediaRepo.deleteAllByIdInBatch(
+                        indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
+                // TODO: need to have a scheduled clean up service to go threw
+                // previews and check if
+                // they are still in the db or make a table where deleted previews
+                // are kept
                 scanContext.setStageStatTotal(ScanStage.PERSISTENCE, (long) newIndexedMedia.size());
 
                 Thread.ofVirtual()
@@ -121,10 +125,14 @@ public class IndexService {
                 indexedMediaToDelete.removeAll(newIndexedMedia);
                 newIndexedMedia.removeAll(indexedMediaCurrent);
 
-                logger.info("Will Delete {} stale files, and add {} new ones", indexedMediaToDelete.size(), newIndexedMedia.size());
+                logger.info(
+                        "Will Delete {} stale files, and add {} new ones",
+                        indexedMediaToDelete.size(),
+                        newIndexedMedia.size());
                 newIndexedMedia.forEach(System.out::println);
 
-                indexedMediaRepo.deleteAllByIdInBatch(indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
+                indexedMediaRepo.deleteAllByIdInBatch(
+                        indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
 
                 scanContext.setStageStatTotal(ScanStage.PERSISTENCE, (long) newIndexedMedia.size());
 
@@ -153,14 +161,18 @@ public class IndexService {
         var generateStart = LocalTime.now();
         previewService.generatePreviews(indexedMedia);
         var generateEnd = LocalTime.now();
-        logger.info("Time to generate previews: {} ms", Duration.between(generateStart, generateEnd).toMillis());
+        logger.info(
+                "Time to generate previews: {} ms",
+                Duration.between(generateStart, generateEnd).toMillis());
     }
 
     private List<IndexedMedia> extractMetadata(List<Path> paths) {
         var hashStart = LocalTime.now();
         var indexedMedia = metadataExtractorService.extractMetadata(paths);
         var hashEnd = LocalTime.now();
-        logger.info("Time to Extract metadata: {} ms", Duration.between(hashStart, hashEnd).toMillis());
+        logger.info(
+                "Time to Extract metadata: {} ms",
+                Duration.between(hashStart, hashEnd).toMillis());
         return indexedMedia;
     }
 
@@ -168,14 +180,19 @@ public class IndexService {
         var persistStart = LocalTime.now();
         scanContext.drainPersistenceQueue(indexedMediaRepo::save);
         var persistEnd = LocalTime.now();
-        logger.info("Time to Persist: {} ms", Duration.between(persistStart, persistEnd).toMillis());
+        logger.info(
+                "Time to Persist: {} ms",
+                Duration.between(persistStart, persistEnd).toMillis());
     }
 
     private List<Path> walkDirectory(String path) {
         var indexStart = LocalTime.now();
         List<Path> imageMetadataList = indexer.walk(path);
         var indexEnd = LocalTime.now();
-        logger.info("Time to walk: {} ms {} files", Duration.between(indexStart, indexEnd).toMillis(), imageMetadataList.size());
+        logger.info(
+                "Time to walk: {} ms {} files",
+                Duration.between(indexStart, indexEnd).toMillis(),
+                imageMetadataList.size());
         return imageMetadataList;
     }
 
@@ -183,7 +200,10 @@ public class IndexService {
         var indexStart = LocalTime.now();
         List<Path> imageMetadataList = indexer.walkDirRecursively(path);
         var indexEnd = LocalTime.now();
-        logger.info("Time to walk: {} ms {} files", Duration.between(indexStart, indexEnd).toMillis(), imageMetadataList.size());
+        logger.info(
+                "Time to walk: {} ms {} files",
+                Duration.between(indexStart, indexEnd).toMillis(),
+                imageMetadataList.size());
         return imageMetadataList;
     }
 
@@ -191,7 +211,10 @@ public class IndexService {
         var indexStart = LocalTime.now();
         List<Path> imageMetadataList = indexer.list(path);
         var indexEnd = LocalTime.now();
-        logger.info("Time to walk: {} ms {} files", Duration.between(indexStart, indexEnd).toMillis(), imageMetadataList.size());
+        logger.info(
+                "Time to walk: {} ms {} files",
+                Duration.between(indexStart, indexEnd).toMillis(),
+                imageMetadataList.size());
         return imageMetadataList;
     }
 
@@ -204,13 +227,10 @@ public class IndexService {
     }
 
     public List<IndexedMedia> getIndexInfoDateOrderedList() {
-        return getIndexInfoList()
-                .stream()
-                .sorted(
-                        Comparator
-                                .comparing(
-                                        IndexedMedia::getCaptureTime,
-                                        Comparator.nullsLast(Comparator.reverseOrder()))).toList();
+        return getIndexInfoList().stream()
+                .sorted(Comparator.comparing(
+                        IndexedMedia::getCaptureTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
     }
 
     public Long getCount() {
@@ -226,8 +246,7 @@ public class IndexService {
     }
 
     public Optional<Path> getPreviewPath(String hash) {
-        return getIndexMediaByHash(hash)
-                .map(p -> Path.of(p.getPreviewPath()));
+        return getIndexMediaByHash(hash).map(p -> Path.of(p.getPreviewPath()));
     }
 
     public ScanContext.ScanStatus getScanStatus() {

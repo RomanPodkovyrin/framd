@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class IndexController {
 
-
     private final IndexService indexService;
 
     private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
@@ -31,20 +30,18 @@ public class IndexController {
 
     @GetMapping("/photo-count")
     public ResponseEntity<String> getImageCount() {
-        return ResponseEntity.ok(switch (indexService.getCount()) {
-            case Long c when c != 1 -> c + " photos";
-            case Long c -> c + " photo";
-        });
+        return ResponseEntity.ok(
+                switch (indexService.getCount()) {
+                    case Long c when c != 1 -> c + " photos";
+                    case Long c -> c + " photo";
+                });
     }
 
     @GetMapping("/preview/{hash}")
     public ResponseEntity<FileSystemResource> getPreview(@PathVariable String hash) {
         var path = indexService.getPreviewPath(hash);
-        return path.map(p -> ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_JPEG)
-                        .body(new FileSystemResource(p)))
+        return path.map(p ->
+                        ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(new FileSystemResource(p)))
                 .orElse(ResponseEntity.notFound().build());
     }
-
-
 }

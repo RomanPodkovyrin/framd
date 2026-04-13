@@ -1,21 +1,18 @@
 package dev.romanempire.framd.indexing.impl;
 
-
 import dev.romanempire.framd.extractor.util.ImageTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class FSIndexer implements Indexer {
 
     private static final Logger logger = LoggerFactory.getLogger(FSIndexer.class);
-
 
     @Override
     public List<Path> walk(String path) {
@@ -67,5 +64,4 @@ public class FSIndexer implements Indexer {
         }
         return List.of();
     }
-
 }
