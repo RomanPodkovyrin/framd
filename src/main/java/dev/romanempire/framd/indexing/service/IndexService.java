@@ -3,6 +3,7 @@ package dev.romanempire.framd.indexing.service;
 import dev.romanempire.framd.extractor.service.MetadataExtractorService;
 import dev.romanempire.framd.indexing.model.ScanContext;
 import dev.romanempire.framd.indexing.impl.Indexer;
+import dev.romanempire.framd.indexing.model.ScanStage;
 import dev.romanempire.framd.repository.IndexedMedia;
 import dev.romanempire.framd.repository.IndexedMediaRepo;
 import dev.romanempire.framd.extractor.service.PreviewService;
@@ -61,6 +62,7 @@ public class IndexService {
 
                 var indexedMedia = extractMetadata(paths);
 
+
                 // Determine stale and new files
                 var indexedMediaToDelete = new HashSet<>(getIndexInfoList());
                 var indexedMediaCurrent = new HashSet<>(indexedMediaToDelete);
@@ -72,14 +74,19 @@ public class IndexService {
 
                 indexedMediaRepo.deleteAllByIdInBatch(indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
                 //TODO: need to have a scheduled clean up service to go threw previews and check if they are still in the db or make a table where deleted previews are kept
+                scanContext.setStageStatTotal(ScanStage.PERSISTENCE, (long) newIndexedMedia.size());
 
-                var indexedMediaWithPreviews = generatePreviews(newIndexedMedia.stream().toList());
+                Thread.ofVirtual()
+                        .uncaughtExceptionHandler((_, e) -> {
+                            logger.error("Thread failed", e);
+                            scanContext.endScan();
+                        })
+                        .start(() -> generatePreviews(newIndexedMedia.stream().toList()));
 
-                persist(indexedMediaWithPreviews);
+                persist();
             } catch (Exception e) {
                 logger.error("Scan Failed: ", e);
             } finally {
-                ;
                 logger.debug("Scanning flag is released");
                 scanContext.endScan();
             }
@@ -119,9 +126,16 @@ public class IndexService {
 
                 indexedMediaRepo.deleteAllByIdInBatch(indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
 
-                var indexedMediaWithPreviews = generatePreviews(newIndexedMedia.stream().toList());
+                scanContext.setStageStatTotal(ScanStage.PERSISTENCE, (long) newIndexedMedia.size());
 
-                persist(indexedMediaWithPreviews);
+                Thread.ofVirtual()
+                        .uncaughtExceptionHandler((_, e) -> {
+                            logger.error("Thread failed", e);
+                            scanContext.endScan();
+                        })
+                        .start(() -> generatePreviews(newIndexedMedia.stream().toList()));
+
+                persist();
             } catch (Exception e) {
                 logger.error("Scan Failed: ", e);
             } finally {
@@ -135,12 +149,11 @@ public class IndexService {
         return true;
     }
 
-    private List<IndexedMedia> generatePreviews(List<IndexedMedia> indexedMedia) {
+    private void generatePreviews(List<IndexedMedia> indexedMedia) {
         var generateStart = LocalTime.now();
-        var indexedMediaWithPreviews = previewService.generatePreviews(indexedMedia);
+        previewService.generatePreviews(indexedMedia);
         var generateEnd = LocalTime.now();
         logger.info("Time to generate previews: {} ms", Duration.between(generateStart, generateEnd).toMillis());
-        return indexedMediaWithPreviews;
     }
 
     private List<IndexedMedia> extractMetadata(List<Path> paths) {
@@ -151,9 +164,9 @@ public class IndexService {
         return indexedMedia;
     }
 
-    private void persist(List<IndexedMedia> indexedMedia) {
+    private void persist() throws InterruptedException {
         var persistStart = LocalTime.now();
-        indexedMediaRepo.saveAll(indexedMedia);
+        scanContext.drainPersistenceQueue(indexedMediaRepo::save);
         var persistEnd = LocalTime.now();
         logger.info("Time to Persist: {} ms", Duration.between(persistStart, persistEnd).toMillis());
     }

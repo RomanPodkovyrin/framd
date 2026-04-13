@@ -1,6 +1,9 @@
 package dev.romanempire.framd.extractor.service;
 
+import dev.romanempire.framd.indexing.model.ScanContext;
+import dev.romanempire.framd.indexing.model.ScanStage;
 import dev.romanempire.framd.repository.IndexedMedia;
+import lombok.RequiredArgsConstructor;
 import net.coobird.thumbnailator.Thumbnails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,13 +13,13 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@RequiredArgsConstructor
 public class PreviewService {
 
 
@@ -25,21 +28,24 @@ public class PreviewService {
 
     private static final Logger logger = LoggerFactory.getLogger(PreviewService.class);
 
+    private final ScanContext scanContext;
+
 
     ///
     /// Generates Previews for each Path passed
     ///
-    public List<IndexedMedia> generatePreviews(List<IndexedMedia> indexedMedia) {
-        List<IndexedMedia> indexedMediaWithPreview = Collections.synchronizedList(new ArrayList<>());
+    public void generatePreviews(List<IndexedMedia> indexedMedia) {
 
         logger.info("Generating Previews");
+        var generatedCount = new AtomicLong(0L);
 
         Path thumbsDir = Path.of(previewPath);
         try {
             Files.createDirectories(thumbsDir); // no-op if already exists
         } catch (IOException e) {
             logger.error("Failed to make Preview Directory {} with error: {}", previewPath, e.toString());
-            return indexedMedia;
+
+            scanContext.completePersistQueue();
         }
 
         var semaphore = new Semaphore(20);
@@ -53,11 +59,15 @@ public class PreviewService {
                             var sourcePath = Path.of(media.getFullPath());
                             var outputPath = Path.of(previewPath).resolve(Path.of(media.generatePreviewPathFromHash()));
                             generatePreview(sourcePath, outputPath);
-                            indexedMediaWithPreview.add(media.withPreviewPath(outputPath.toString()));
+                            scanContext.enqueueForPersistence(media.withPreviewPath(outputPath.toString()));
+                            generatedCount.incrementAndGet();
+                            scanContext.incrementStageStat(ScanStage.PREVIEW);
                         } catch (IOException e) {
                             logger.error("Failed generating preview: {} with error {}", media.getHash(), e.getMessage());
                         } catch (InterruptedException e) {
-                            logger.error("Semaphore acquire got interrupted: {}", e.getMessage());
+                            logger.error("InterruptedException: {}", e.getMessage());
+                        } catch (IllegalArgumentException e) {
+                            logger.error("Tried inserting illegal argument into queue", e);
                         } catch (Exception e) {
                             logger.error("Generic error: ", e);
                         } finally {
@@ -65,8 +75,10 @@ public class PreviewService {
                         }
                     }));
         }
-        logger.info("Generated {}/{} files", indexedMediaWithPreview.size(), indexedMedia.size());
-        return indexedMediaWithPreview;
+
+        scanContext.completePersistQueue();
+
+        logger.info("Generated {}/{} files", generatedCount.get(), indexedMedia.size());
     }
 
 
