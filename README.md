@@ -28,6 +28,42 @@ spotless
 ```bash
 ./mvnw spotless:apply
 ```
+## Spring Profiles
+
+Two profiles are available: `dev` and `prod`.
+
+- **dev**: local development
+- **prod**: Docker/NAS deployment
+
+### Activating a profile
+
+**Mac/Linux:**
+```bash
+export SPRING_PROFILES_ACTIVE=dev
+```
+
+**IntelliJ IDEA:**
+
+Go to `Run > Edit Configurations`, select your Spring Boot run configuration, and add `dev` to the `Active profiles` field.
+
+## Docker
+### Build
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t framd .
+```
+
+### Push to Docker Hub
+
+```bash
+docker login
+docker tag framd romanempiredev/framd:0.1
+docker tag framd romanempiredev/framd:latest
+docker tag framd romanempiredev/framd:dev
+docker push romanempiredev/framd:0.1
+docker push romanempiredev/framd:latest
+docker push romanempiredev/framd:dev
+
+```
 ## API Docs
 
 Once the app is running, the OpenAPI spec is available at:

@@ -39,6 +39,7 @@ COPY --from=build /build/target/Framd-0.0.1-SNAPSHOT.jar app.jar
 
 #ENV JAVA_OPTS="-XX:MaxHeapFreeRatio=30 -XX:MinHeapFreeRatio=10"
 
+ENV SPRING_PROFILES_ACTIVE="prod"
 EXPOSE 7878
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
