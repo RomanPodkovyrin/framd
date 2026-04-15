@@ -6,9 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title}">Framd</title>
     <link rel="stylesheet" th:href="@{/styles.css}">
+    <meta th:if="${_csrf != null}" name="_csrf" th:content="${_csrf.token}" />
+    <meta th:if="${_csrf != null}" name="_csrf_header" th:content="${_csrf.headerName}" />
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
             integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
             crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('htmx:configRequest', function(event) {
+            const csrf = document.querySelector('meta[name="_csrf"]');
+            if (csrf) event.detail.headers['X-CSRF-TOKEN'] = csrf.content;
+        });
+    </script>
 </head>
 
 <header th:fragment="header(page)">
