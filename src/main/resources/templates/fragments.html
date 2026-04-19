@@ -31,6 +31,7 @@
             <span class="scan-label">Idle</span>
         </span>
         <button class="scan-btn nav-control" hx-post="/scan" hx-swap="none">Scan</button>
+        <a th:if="${page == 'gallery'}" href="/frame" class="nav-link nav-control">Frame</a>
         <a th:if="${page == 'gallery'}" href="/admin" class="nav-link nav-control">Admin</a>
     </nav>
 </header>

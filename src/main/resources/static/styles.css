@@ -335,3 +335,47 @@ footer span {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
+
+/* Frame mode */
+
+.frame-body {
+    background: #000;
+    overflow: hidden;
+}
+
+.frame-stage {
+    position: fixed;
+    inset: 0;
+}
+
+.frame-stage img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    animation: frame-fade 1.5s ease;
+}
+
+@keyframes frame-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.frame-controls {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 10;
+    display: flex;
+    gap: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.frame-body:hover .frame-controls {
+    opacity: 1;
+}
+
+.frame-btn {
+    text-decoration: none;
+}

@@ -39,6 +39,11 @@ public class UIController {
         return "index.html";
     }
 
+    @GetMapping("/frame")
+    public String frame(Model model) {
+        return "frame.html";
+    }
+
     @GetMapping("/admin")
     public String admin() {
         return "admin.html";
