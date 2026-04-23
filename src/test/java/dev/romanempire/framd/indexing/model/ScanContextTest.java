@@ -2,7 +2,7 @@ package dev.romanempire.framd.indexing.model;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import dev.romanempire.framd.repository.IndexedMedia;
+import dev.romanempire.framd.repository.model.IndexedMedia;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;

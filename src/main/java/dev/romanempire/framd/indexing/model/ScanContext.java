@@ -1,7 +1,7 @@
 package dev.romanempire.framd.indexing.model;
 
 import dev.romanempire.framd.indexing.model.message.ScanMessage;
-import dev.romanempire.framd.repository.IndexedMedia;
+import dev.romanempire.framd.repository.model.IndexedMedia;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;

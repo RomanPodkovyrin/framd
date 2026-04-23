@@ -1,5 +1,6 @@
 package dev.romanempire.framd.controller;
 
+import dev.romanempire.framd.frame.service.FrameService;
 import dev.romanempire.framd.indexing.service.IndexService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class UIController {
 
     private final IndexService indexService;
+
+    private final FrameService frameService;
 
     private static final Logger logger = LoggerFactory.getLogger(UIController.class);
 
@@ -40,8 +43,14 @@ public class UIController {
     }
 
     @GetMapping("/frame")
-    public String frame(Model model) {
+    public String frame() {
         return "frame.html";
+    }
+
+    @GetMapping("/frame/info")
+    public String getFrameInfo(Model model) {
+        model.addAttribute("info", frameService.getNextFrameInfo());
+        return "frame :: info";
     }
 
     @GetMapping("/admin")

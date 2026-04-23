@@ -1,9 +1,6 @@
-package dev.romanempire.framd.repository;
+package dev.romanempire.framd.repository.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
 
@@ -14,8 +11,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @With
-public class IndexedMedia {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Exclude
+    private String id;
+
+    @Column(nullable = false)
     private String hash;
 
     @Column(nullable = false)

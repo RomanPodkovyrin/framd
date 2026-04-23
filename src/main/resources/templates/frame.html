@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="5">
-    <title>Frame</title>
-    <link rel="stylesheet" th:href="@{/styles.css}">
-</head>
+<head th:replace="~{fragments :: head('Frame')}"></head>
 <body class="frame-body">
 
 <div class="frame-controls">
@@ -14,8 +8,25 @@
     <a href="/" class="frame-btn nav-link nav-control">Exit</a>
 </div>
 
-<div class="frame-stage">
-    <img src="/frame/next" class="frame-img" alt="">
+<div id="frame-stage" class="frame-stage"
+     hx-get="/frame/info"
+     hx-trigger="load, every 5s"
+     hx-swap="innerHTML">
+    <!--     TODO: load interval from the backend-->
+    <div th:fragment="info">
+        <div th:if="${info == null or !info.isPresent()}" class="no-frames-msg">
+            <p>No more images for today</p>
+        </div>
+        <th:block th:if="${info != null and info.isPresent()}">
+            <img th:src="@{/frame/next/{hash}(hash=${info.get().hash})}"
+                 class="frame-img" alt="">
+            <div class="frame-banner">
+                <span th:if="${info.get().captureTime != null}"
+                      th:text="${#temporals.format(info.get().captureTime, 'yyyy-MM-dd HH:mm')}"></span>
+                <span th:text="${info.get().folder}"></span>
+            </div>
+        </th:block>
+    </div>
 </div>
 
 </body>

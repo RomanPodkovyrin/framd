@@ -2,7 +2,7 @@ package dev.romanempire.framd.extractor.service;
 
 import dev.romanempire.framd.indexing.model.ScanContext;
 import dev.romanempire.framd.indexing.model.ScanStage;
-import dev.romanempire.framd.repository.IndexedMedia;
+import dev.romanempire.framd.repository.model.IndexedMedia;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

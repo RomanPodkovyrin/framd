@@ -3,7 +3,7 @@ package dev.romanempire.framd.extractor.service;
 import dev.romanempire.framd.extractor.model.ExifData;
 import dev.romanempire.framd.extractor.util.FileHasher;
 import dev.romanempire.framd.extractor.util.ImageTools;
-import dev.romanempire.framd.repository.IndexedMedia;
+import dev.romanempire.framd.repository.model.IndexedMedia;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
