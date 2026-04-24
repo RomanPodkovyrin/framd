@@ -8,11 +8,14 @@ import dev.romanempire.framd.repository.model.IndexedMedia;
 import java.time.LocalDateTime;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class FrameService {
+    // todo list in order
 
     private final IndexedMediaRepo indexedMediaRepo;
 
@@ -22,12 +25,19 @@ public class FrameService {
 
     private final Random random = new Random();
 
+    private static final Logger logger = LoggerFactory.getLogger(FrameService.class);
+
+    private static final int QUEUE_REFRESH_THRESHOLD = 5;
+
     private final Queue<IndexedMedia> frameQueue = new LinkedList<>();
+    // TODO: make Concurrent queue
 
     public Optional<IndexMediaDto> getNextFrameInfo() {
 
-        if (frameQueue.size() < 5) {
-            frameSelector.refreshFrameQueue(frameQueue);
+        if (frameQueue.size() < QUEUE_REFRESH_THRESHOLD) {
+            logger.info("Refilling the queue");
+            frameSelector.refreshFrameQueue(frameQueue); // Trigger in a thread
+            // check bool return
         }
         var toShow = frameQueue.poll();
         frameLogRepo.save(FrameLog.builder()

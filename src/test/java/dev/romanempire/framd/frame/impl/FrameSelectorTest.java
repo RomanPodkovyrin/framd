@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
-public class FrameSelectorTest {
+class FrameSelectorTest {
 
     @Mock
     IndexedMediaRepo indexedMediaRepo;
@@ -144,5 +145,71 @@ public class FrameSelectorTest {
         assertThat(new ArrayList<>(queue))
                 .extracting(IndexedMedia::getPath)
                 .containsExactly("/folder1", "/folder1", "/folder2", "/folder2");
+    }
+
+    @Test
+    void refreshFrameQueue_maintainMaxGroupSize() {
+        var files = IntStream.range(0, FrameSelector.MAXIMUM_GROUP_SIZE * 2)
+                .boxed()
+                .map(i -> IndexedMedia.builder()
+                        .id(i.toString())
+                        .hash(i.toString())
+                        .path("/folder")
+                        .build())
+                .toList();
+
+        when(indexedMediaRepo.findAllByCaptureDayAndMonth(anyInt(), anyInt(), anyInt()))
+                .thenReturn(List.of());
+        when(indexedMediaRepo.findAll(any(Sort.class))).thenReturn(files);
+        when(frameLogRepo.getLogStats()).thenReturn(List.of());
+
+        Queue<IndexedMedia> queue = new LinkedList<>();
+        frameSelector.refreshFrameQueue(queue);
+
+        assertEquals(FrameSelector.MAXIMUM_GROUP_SIZE, queue.size());
+    }
+
+    @Test
+    void refreshFrameQueue_maintainMaximumSizeOnThisDay() {
+        var files = IntStream.range(0, FrameSelector.MAXIMUM_ON_TODAY_SIZE * 2)
+                .boxed()
+                .map(i -> IndexedMedia.builder()
+                        .id(i.toString())
+                        .hash(i.toString())
+                        .path("/folder")
+                        .build())
+                .toList();
+
+        when(indexedMediaRepo.findAllByCaptureDayAndMonth(anyInt(), anyInt(), anyInt()))
+                .thenReturn(files);
+        when(indexedMediaRepo.findAll(any(Sort.class))).thenReturn(List.of());
+        when(frameLogRepo.getLogStats()).thenReturn(List.of());
+
+        Queue<IndexedMedia> queue = new LinkedList<>();
+        frameSelector.refreshFrameQueue(queue);
+
+        assertEquals(FrameSelector.MAXIMUM_ON_TODAY_SIZE, queue.size());
+    }
+
+    @Test
+    void refreshFrameQueue_maintainMaxNumberOfGroups() {
+        var files = IntStream.range(0, FrameSelector.MAXIMUM_NUMBER_GROUPS * 2)
+                .boxed()
+                .map(i -> IndexedMedia.builder()
+                        .id(i.toString())
+                        .hash(i.toString())
+                        .path("/folder" + i)
+                        .build())
+                .toList();
+
+        when(indexedMediaRepo.findAllByCaptureDayAndMonth(anyInt(), anyInt(), anyInt()))
+                .thenReturn(List.of());
+        when(indexedMediaRepo.findAll(any(Sort.class))).thenReturn(files);
+        when(frameLogRepo.getLogStats()).thenReturn(List.of());
+
+        Queue<IndexedMedia> queue = new LinkedList<>();
+        frameSelector.refreshFrameQueue(queue);
+
+        assertEquals(FrameSelector.MAXIMUM_NUMBER_GROUPS, queue.size());
     }
 }
