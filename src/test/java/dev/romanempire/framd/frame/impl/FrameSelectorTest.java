@@ -42,7 +42,7 @@ class FrameSelectorTest {
         when(indexedMediaRepo.findAllByCaptureDayAndMonth(anyInt(), anyInt(), anyInt()))
                 .thenReturn(List.of());
 
-        when(indexedMediaRepo.findAll(Sort.by(Sort.Direction.DESC, "captureTime")))
+        when(indexedMediaRepo.findAll(Sort.by(Sort.Direction.ASC, "captureTime")))
                 .thenReturn(List.of());
 
         Queue<IndexedMedia> queue = new LinkedList<>();
@@ -62,7 +62,7 @@ class FrameSelectorTest {
         when(indexedMediaRepo.findAllByCaptureDayAndMonth(anyInt(), anyInt(), anyInt()))
                 .thenReturn(List.of());
 
-        when(indexedMediaRepo.findAll(Sort.by(Sort.Direction.DESC, "captureTime")))
+        when(indexedMediaRepo.findAll(Sort.by(Sort.Direction.ASC, "captureTime")))
                 .thenReturn(List.of(
                         IndexedMedia.builder().hash("abc").path("/birthday").build()));
 
@@ -167,6 +167,40 @@ class FrameSelectorTest {
         frameSelector.refreshFrameQueue(queue);
 
         assertEquals(FrameSelector.MAXIMUM_GROUP_SIZE, queue.size());
+    }
+
+    @Test
+    void refreshFrameQueue_distributeImagesFromGroup() {
+        var files = IntStream.range(0, FrameSelector.MAXIMUM_ON_TODAY_SIZE * 2)
+                .boxed()
+                .map(i -> IndexedMedia.builder()
+                        .id(i.toString())
+                        .hash(i.toString())
+                        .path("/folder")
+                        .captureTime(LocalDateTime.now())
+                        .build())
+                .toList();
+
+        var lastHalfIsFatigued = IntStream.range(0, FrameSelector.MAXIMUM_ON_TODAY_SIZE * 2)
+                .boxed()
+                .filter(i -> i > files.size() / 2)
+                .map(i -> new FrameLogStats(i.toString(), 10L, LocalDateTime.now()))
+                .toList();
+
+        when(indexedMediaRepo.findAllByCaptureDayAndMonth(anyInt(), anyInt(), anyInt()))
+                .thenReturn(List.of());
+        when(indexedMediaRepo.findAll(any(Sort.class))).thenReturn(files);
+        when(frameLogRepo.getLogStats()).thenReturn(lastHalfIsFatigued);
+
+        Queue<IndexedMedia> queue = new LinkedList<>();
+        frameSelector.refreshFrameQueue(queue);
+
+        assertEquals(FrameSelector.MAXIMUM_ON_TODAY_SIZE, queue.size());
+
+        assertThat(queue)
+                .allMatch(
+                        im -> Integer.parseInt(im.getId()) % 2 == 0,
+                        "Should only return even ids distributed across the group");
     }
 
     @Test

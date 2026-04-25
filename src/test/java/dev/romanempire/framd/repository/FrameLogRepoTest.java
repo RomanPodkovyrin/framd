@@ -18,7 +18,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @DataJpaTest
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class FrameLogRepoTest {
+class FrameLogRepoTest {
 
     @Container
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17");
