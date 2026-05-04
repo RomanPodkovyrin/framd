@@ -16,9 +16,12 @@ See [FEATURES.md](FEATURES.md) for the full list of planned and in-progress feat
 ```bash
 ./mvnw spring-boot:run
 ```
+
+
 ```bash
 ./mvnw clean test jacoco:report
 ```
+
 ### Linting
 
 spotless
@@ -29,6 +32,7 @@ spotless
 ```bash
 ./mvnw spotless:apply
 ```
+
 ## Spring Profiles
 
 Two profiles are available: `dev` and `prod`.
@@ -48,6 +52,9 @@ export SPRING_PROFILES_ACTIVE=dev
 Go to `Run > Edit Configurations`, select your Spring Boot run configuration, and add `dev` to the `Active profiles` field.
 
 ## Docker
+
+See example [`docker-compose.yaml`](docker/nas/docker-compose.yaml) and [`.env`](docker/nas/.env) in `docker/nas/`.
+
 ### Build
 ```bash
 docker buildx build --platform linux/amd64,linux/arm64 -t framd .

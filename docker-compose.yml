@@ -33,8 +33,6 @@ services:
     ports:
       - "7878:7878"
     environment:
-      MEDIA_LIBRARY_PATH: /media
-      PREVIEW_PATH: /app/previews
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: example
