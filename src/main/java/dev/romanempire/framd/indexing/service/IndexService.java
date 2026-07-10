@@ -74,10 +74,6 @@ public class IndexService {
 
                 indexedMediaRepo.deleteAllByIdInBatch(
                         indexedMediaToDelete.stream().map(IndexedMedia::getHash).toList());
-                // TODO: need to have a scheduled clean up service to go threw
-                // previews and check if
-                // they are still in the db or make a table where deleted previews
-                // are kept
                 scanContext.setStageStatTotal(ScanStage.PERSISTENCE, (long) newIndexedMedia.size());
 
                 Thread.ofVirtual()

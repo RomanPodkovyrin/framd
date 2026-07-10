@@ -12,7 +12,6 @@
      hx-get="/frame/info"
      hx-trigger="load, every 5s"
      hx-swap="innerHTML">
-    <!--     TODO: load interval from the backend-->
     <div th:fragment="info">
         <div th:if="${info == null or !info.isPresent()}" class="no-frames-msg">
             <p>No more images for today</p>

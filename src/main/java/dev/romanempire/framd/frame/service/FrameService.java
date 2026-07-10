@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class FrameService {
-    // todo list in order
 
     private final IndexedMediaRepo indexedMediaRepo;
 
@@ -30,14 +29,12 @@ public class FrameService {
     private static final int QUEUE_REFRESH_THRESHOLD = 5;
 
     private final Queue<IndexedMedia> frameQueue = new LinkedList<>();
-    // TODO: make Concurrent queue
 
     public Optional<IndexMediaDto> getNextFrameInfo() {
 
         if (frameQueue.size() < QUEUE_REFRESH_THRESHOLD) {
             logger.info("Refilling the queue");
-            frameSelector.refreshFrameQueue(frameQueue); // Trigger in a thread
-            // check bool return
+            frameSelector.refreshFrameQueue(frameQueue);
         }
         var toShow = frameQueue.poll();
         frameLogRepo.save(FrameLog.builder()

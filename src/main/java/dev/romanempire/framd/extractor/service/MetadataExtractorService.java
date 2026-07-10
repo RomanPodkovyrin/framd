@@ -65,9 +65,7 @@ public class MetadataExtractorService {
 
                 } catch (InterruptedException e) {
                     logger.error("Semaphore Interrupted: {}", e.getMessage());
-                } catch (Throwable e) { // todo need to have those otherwise
-                    // thread silently swallows the
-                    // error
+                } catch (Throwable e) {
                     logger.error("Generic exception: {}", e.getMessage());
                 } finally {
                     semaphore.release();

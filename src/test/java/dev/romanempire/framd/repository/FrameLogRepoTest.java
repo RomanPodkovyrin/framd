@@ -64,7 +64,7 @@ class FrameLogRepoTest {
         var stats = frameLogRepo.getLogStats();
 
         assertEquals(2, stats.size());
-        assertEquals(media.getId(), stats.getFirst().mediaId()); // todo flaky order not deterministic
+        assertEquals(media.getId(), stats.getFirst().mediaId());
         assertEquals(2L, stats.getFirst().count());
         assertEquals(t2, stats.getFirst().lastShown());
         assertEquals(media2.getId(), stats.get(1).mediaId());

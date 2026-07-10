@@ -75,7 +75,6 @@ public class FrameSelector {
                 frameLogRepo.getLogStats().stream().collect(Collectors.toMap(FrameLogStats::mediaId, m -> m));
 
         var enhancedGroupsList = new ArrayList<>(getEnhancedGroupsList(folderGroupList, frameLogStatsMap));
-
         Collections.shuffle(enhancedGroupsList);
 
         var sorted = enhancedGroupsList.stream()
@@ -126,7 +125,7 @@ public class FrameSelector {
     /// @param frameLogStatsMap map of media ID to fatigue stats, used to pick the least-shown image per bucket
     /// @param groupList        images in a single folder group, must be pre-sorted by capture time
     /// @return a list of up to [MAXIMUM_GROUP_SIZE] images with temporal spread, or the original list if it is
-    /// small enough
+    // small enough
     private static List<IndexedMedia> enhanceFolderGroupDistribution(
             Map<String, FrameLogStats> frameLogStatsMap, List<IndexedMedia> groupList) {
 
