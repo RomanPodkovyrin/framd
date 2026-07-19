@@ -33,3 +33,4 @@ build/
 .vscode/
 /.preview/
 /docker/nas/.previews/
+/reports/

@@ -1,5 +1,6 @@
 package dev.romanempire.framd.repository;
 
+import dev.romanempire.framd.repository.model.FileLintItem;
 import dev.romanempire.framd.repository.model.IndexedMedia;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,8 @@ public interface IndexedMediaRepo extends JpaRepository<IndexedMedia, String> {
             """)
     List<IndexedMedia> findAllByCaptureDayAndMonth(
             @Param("day") int day, @Param("month") int month, @Param("year") int year);
+
+    @Query(
+            "SELECT new dev.romanempire.framd.repository.model.FileLintItem(m.name, m.captureTime, m.path) FROM IndexedMedia m")
+    List<FileLintItem> findAllFileLintItem();
 }

@@ -33,8 +33,8 @@ public class FrameSelector {
     private List<IndexedMedia> getOnThisDay(Map<String, FrameLogStats> frameLogStatsMap) {
         var today = LocalDate.now();
         // filter out images from today
-        var onThisDayList = indexedMediaRepo
-                .findAllByCaptureDayAndMonth(today.getDayOfMonth(), today.getMonthValue(), today.getYear());
+        var onThisDayList = indexedMediaRepo.findAllByCaptureDayAndMonth(
+                today.getDayOfMonth(), today.getMonthValue(), today.getYear());
 
         return enhanceFolderGroupDistribution(frameLogStatsMap, onThisDayList);
     }
@@ -86,7 +86,7 @@ public class FrameSelector {
         sorted.forEach(s -> System.out.println(s.groupPath));
 
         List<IndexedMedia> onThisDay = List.of();
-        if (!lastOnThisDay.isEqual(LocalDate.now().atStartOfDay()) ){
+        if (!lastOnThisDay.isEqual(LocalDate.now().atStartOfDay())) {
             logger.info("Generating on this day");
             onThisDay = getOnThisDay(frameLogStatsMap);
             lastOnThisDay = LocalDate.now().atStartOfDay();
