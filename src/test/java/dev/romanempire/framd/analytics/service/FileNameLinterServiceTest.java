@@ -73,13 +73,13 @@ class FileNameLinterServiceTest {
 
     static Stream<Arguments> wrongFormattingCases() {
         return Stream.of(
-                arguments("roman",               LocalDateTime.of(2001, 12, 12,  1,  1,  1), "2001-12-12-01h01m01"),
-                arguments("IMG_20011212",         LocalDateTime.of(2023,  6, 15, 14, 30, 45), "2023-06-15-14h30m45"),
-                arguments("photo.jpg",            LocalDateTime.of(2019,  3, 22,  8, 15,  0), "2019-03-22-08h15m00"),
-                arguments("2001-12-12",           LocalDateTime.of(2001, 12, 12,  1,  1,  1), "2001-12-12-01h01m01"),
-                arguments("2001-12-12-01h01m",    LocalDateTime.of(2001, 12, 12,  1,  1,  1), "2001-12-12-01h01m01"),
-                arguments("20011212_010101",       LocalDateTime.of(2020,  8,  7, 22, 45, 30), "2020-08-07-22h45m30"),
-                arguments("2001_12_12_01h01m01",  LocalDateTime.of(2015, 11,  1,  9,  0,  0), "2015-11-01-09h00m00"));
+                arguments("roman", LocalDateTime.of(2001, 12, 12, 1, 1, 1), "2001-12-12-01h01m01"),
+                arguments("IMG_20011212", LocalDateTime.of(2023, 6, 15, 14, 30, 45), "2023-06-15-14h30m45"),
+                arguments("photo.jpg", LocalDateTime.of(2019, 3, 22, 8, 15, 0), "2019-03-22-08h15m00"),
+                arguments("2001-12-12", LocalDateTime.of(2001, 12, 12, 1, 1, 1), "2001-12-12-01h01m01"),
+                arguments("2001-12-12-01h01m", LocalDateTime.of(2001, 12, 12, 1, 1, 1), "2001-12-12-01h01m01"),
+                arguments("20011212_010101", LocalDateTime.of(2020, 8, 7, 22, 45, 30), "2020-08-07-22h45m30"),
+                arguments("2001_12_12_01h01m01", LocalDateTime.of(2015, 11, 1, 9, 0, 0), "2015-11-01-09h00m00"));
     }
 
     @ParameterizedTest
@@ -105,7 +105,6 @@ class FileNameLinterServiceTest {
                 arguments("2020-01-01-00h00m00", LocalDateTime.of(2019, 12, 31, 23, 59, 59), "2019-12-31-23h59m59"));
     }
 
-
     @Test
     void correctlyFormattedFile_producesNoFindings() {
         Mockito.when(indexedMediaRepo.findAllFileLintItem())
@@ -121,11 +120,10 @@ class FileNameLinterServiceTest {
     @Test
     void mixedItems_areCorrectlyCategorized() {
         Mockito.when(indexedMediaRepo.findAllFileLintItem())
-                .thenReturn(
-                        List.of(
-                                new FileLintItem("photo", null, "/a"),
-                                new FileLintItem("bad_name", SOME_DATE, "/b"),
-                                new FileLintItem(CORRECT_NAME, SOME_DATE, "/c")));
+                .thenReturn(List.of(
+                        new FileLintItem("photo", null, "/a"),
+                        new FileLintItem("bad_name", SOME_DATE, "/b"),
+                        new FileLintItem(CORRECT_NAME, SOME_DATE, "/c")));
 
         var result = fileNameLinterService.analyseFileNames();
 
@@ -135,5 +133,4 @@ class FileNameLinterServiceTest {
         assertEquals("bad_name", result.wrongFormatting().getFirst().fileName());
         assertTrue(result.wrongDate().isEmpty());
     }
-
 }
